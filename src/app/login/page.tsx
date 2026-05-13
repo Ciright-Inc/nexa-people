@@ -1,0 +1,387 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetEmailError, setResetEmailError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetPending, setResetPending] = useState(false);
+  const [resetServerError, setResetServerError] = useState<string | null>(null);
+
+  function validate(): boolean {
+    const e = email.trim();
+    const p = password;
+
+    const nextEmailError = e.length === 0 ? "Email is required." : null;
+    const nextPasswordError = p.length === 0 ? "Password is required." : null;
+
+    setEmailError(nextEmailError);
+    setPasswordError(nextPasswordError);
+
+    return !nextEmailError && !nextPasswordError;
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (!validate()) return;
+
+    setPending(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(typeof data.error === "string" ? data.error : "Sign-in failed.");
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Network error. Try again.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function sendResetLink() {
+    const e = resetEmail.trim();
+    const nextErr = e.length === 0 ? "Email is required." : null;
+    setResetEmailError(nextErr);
+    if (nextErr) return;
+
+    setResetPending(true);
+    setResetServerError(null);
+    setResetSent(false);
+    try {
+      const res = await fetch("/api/auth/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: e }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setResetServerError(
+          typeof data.error === "string" ? data.error : "Failed to send reset link."
+        );
+        return;
+      }
+      setResetSent(true);
+    } catch {
+      setResetServerError("Network error. Try again.");
+    } finally {
+      setResetPending(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-12">
+      <div className="glass-panel w-full max-w-md p-8">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="App logo"
+              width={160}
+              height={48}
+              priority
+              className="h-10 w-auto"
+            />
+          </div>
+          <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+            Nexa People
+          </h1>
+          <p className="mt-2 text-sm font-medium text-slate-600">
+            Enter your company credentials to access the{" "}
+            <span className="font-semibold text-primary">analytics dashboard</span>.
+          </p>
+        </div>
+
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-900" htmlFor="email">
+              Email Address <span className="text-rose-600">*</span>
+            </label>
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M4 6.5C4 5.12 5.12 4 6.5 4h11C19.88 4 21 5.12 21 6.5v11c0 1.38-1.12 2.5-2.5 2.5h-11C5.12 20 4 18.88 4 17.5v-11Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M6.5 7.5 12 11.5l5.5-4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="username"
+                required
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError(null);
+                }}
+                onBlur={() => {
+                  if (!email.trim()) setEmailError("Email is required.");
+                }}
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? "email-error" : undefined}
+                className={`w-full rounded-xl border bg-white px-11 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 ${
+                  emailError
+                    ? "border-rose-400 focus:border-rose-400 focus:ring-rose-200"
+                    : "border-slate-900/10 focus:border-primary/30 focus:ring-primary/15"
+                }`}
+                placeholder="name@company.com"
+              />
+            </div>
+            {emailError ? (
+              <p id="email-error" className="mt-2 text-xs font-medium text-rose-700">
+                {emailError}
+              </p>
+            ) : null}
+          </div>
+          <div>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <label className="text-sm font-semibold text-slate-900" htmlFor="password">
+                Password <span className="text-rose-600">*</span>
+              </label>
+              <button
+                type="button"
+                className="text-sm font-medium text-slate-700 underline-offset-4 hover:text-slate-900 hover:underline"
+                onClick={() => {
+                  setResetSent(false);
+                  setResetEmailError(null);
+                  setResetServerError(null);
+                  setResetEmail(email.trim());
+                  setResetOpen(true);
+                }}
+              >
+                Forgot password?
+              </button>
+            </div>
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M7.5 10.2V8.7a4.5 4.5 0 1 1 9 0v1.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M7 10h10a2 2 0 0 1 2 2v6.5A2.5 2.5 0 0 1 16.5 21h-9A2.5 2.5 0 0 1 5 18.5V12a2 2 0 0 1 2-2Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+              </div>
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError(null);
+                }}
+                onBlur={() => {
+                  if (!password) setPasswordError("Password is required.");
+                }}
+                aria-invalid={!!passwordError}
+                aria-describedby={passwordError ? "password-error" : undefined}
+                className={`w-full rounded-xl border bg-white px-11 py-3 pr-11 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 ${
+                  passwordError
+                    ? "border-rose-400 focus:border-rose-400 focus:ring-rose-200"
+                    : "border-slate-900/10 focus:border-primary/30 focus:ring-primary/15"
+                }`}
+                placeholder="Enter password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-3 flex items-center text-slate-500 hover:text-slate-800"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path
+                      d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7Z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path
+                      d="M4 4l16 16"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M10.7 10.7a3.2 3.2 0 0 0 4.5 4.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M6.4 6.6C4.2 8.3 3 10.5 3 12c0 0 3.5 7 9 7 1.6 0 3-.3 4.2-.9"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M9.3 5.4A9.5 9.5 0 0 1 12 5c5.5 0 9 7 9 7 0 1.4-1 3.5-3 5.2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
+            {passwordError ? (
+              <p id="password-error" className="mt-2 text-xs font-medium text-rose-700">
+                {passwordError}
+              </p>
+            ) : null}
+          </div>
+
+          {error ? (
+            <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="hover-lift mt-2 w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:bg-primary-muted disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {pending ? "Signing in…" : "Continue"}
+          </button>
+        </form>
+
+        <p className="mt-8 text-center text-xs text-slate-500">
+          ©{new Date().getFullYear()} Ciright. All Rights Reserved.
+        </p>
+      </div>
+
+      {resetOpen ? (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-40 cursor-default bg-slate-900/25 backdrop-blur-sm"
+            aria-label="Close reset password modal"
+            onClick={() => setResetOpen(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-900/10 bg-white/80 shadow-glass backdrop-blur-xl">
+              <div className="px-7 pb-7 pt-6">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+                  Reset Your Password
+                </h2>
+                <p className="mt-2 text-sm text-slate-600">
+                  Enter your email and we&apos;ll send you a link to reset your password.
+                </p>
+
+                <div className="mt-6">
+                  <label className="mb-2 block text-sm font-semibold text-slate-900" htmlFor="reset-email">
+                    Email Address <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    id="reset-email"
+                    type="email"
+                    value={resetEmail}
+                    onChange={(e) => {
+                      setResetEmail(e.target.value);
+                      if (resetEmailError) setResetEmailError(null);
+                      if (resetSent) setResetSent(false);
+                    }}
+                    onBlur={() => {
+                      if (!resetEmail.trim()) setResetEmailError("Email is required.");
+                    }}
+                    aria-invalid={!!resetEmailError}
+                    aria-describedby={resetEmailError ? "reset-email-error" : undefined}
+                    className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 ${
+                      resetEmailError
+                        ? "border-rose-400 focus:border-rose-400 focus:ring-rose-200"
+                        : "border-slate-900/10 focus:border-primary/30 focus:ring-primary/15"
+                    }`}
+                    placeholder="name@ciright.com"
+                  />
+                  {resetEmailError ? (
+                    <p id="reset-email-error" className="mt-2 text-xs font-medium text-rose-700">
+                      {resetEmailError}
+                    </p>
+                  ) : null}
+                  {resetSent ? (
+                    <p className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800">
+                      If an account exists for this email, a reset link has been sent.
+                    </p>
+                  ) : null}
+                  {resetServerError ? (
+                    <p className="mt-3 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-800">
+                      {resetServerError}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setResetOpen(false)}
+                    className="rounded-xl border border-slate-900/10 bg-white/80 px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-900/15 hover:bg-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={sendResetLink}
+                    disabled={resetPending}
+                    className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {resetPending ? "Sending…" : "Send Reset Link"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}

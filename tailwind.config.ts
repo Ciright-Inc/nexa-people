@@ -1,0 +1,38 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "#003087",
+          foreground: "#ffffff",
+          muted: "#1e4a9e",
+        },
+        surface: {
+          DEFAULT: "rgba(255, 255, 255, 0.72)",
+          solid: "#ffffff",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
+      },
+      boxShadow: {
+        glass: "0 10px 40px rgba(15, 23, 42, 0.10), inset 0 1px 0 rgba(255,255,255,0.65)",
+        card: "0 10px 30px rgba(15, 23, 42, 0.10)",
+      },
+      backdropBlur: {
+        xs: "2px",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;

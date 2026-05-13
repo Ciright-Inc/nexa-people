@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #003087;
+  --primary-soft: rgba(0, 48, 135, 0.12);
+  --primary-glow: rgba(0, 48, 135, 0.22);
+  --bg-deep: #f8fafc;
+  --bg-elevated: #ffffff;
+  --border-soft: rgba(15, 23, 42, 0.10);
+  --text-primary: #0b1220;
+  --text-muted: rgba(15, 23, 42, 0.60);
+  --accent-positive: #34d399;
+  --accent-warn: #fbbf24;
+  --glass: rgba(255, 255, 255, 0.70);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply min-h-dvh antialiased;
+  background:
+    radial-gradient(1200px 600px at 12% -10%, rgba(0, 48, 135, 0.16), transparent 55%),
+    radial-gradient(900px 520px at 92% 6%, rgba(0, 80, 180, 0.10), transparent 55%),
+    linear-gradient(180deg, #ffffff 0%, var(--bg-deep) 100%);
+  color: var(--text-primary);
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply rounded-xl border border-slate-900/10 bg-white/70 shadow-glass backdrop-blur-xl;
+    box-shadow:
+      0 10px 40px rgba(15, 23, 42, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.70);
+  }
+
+  .glass-chip {
+    @apply rounded-full border border-slate-900/10 bg-white/70 px-3 py-1 text-xs text-slate-700 backdrop-blur-md;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-200 ease-out will-change-transform hover:-translate-y-0.5;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-2 ring-primary/25 ring-offset-2 ring-offset-white;
+  }
+}
+
+/* react-simple-maps default fills */
+.rsm-geography:focus {
+  outline: none;
+}

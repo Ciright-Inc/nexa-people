@@ -1,0 +1,137 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+import { clsx } from "clsx";
+import { PRODUCTS } from "@/lib/mock-data";
+import { useDashboardFilters } from "@/context/dashboard-filters";
+
+export function ProductSelect() {
+  const { filters, setProductId } = useDashboardFilters();
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const current = useMemo(
+    () => PRODUCTS.find((p) => p.id === filters.productId) ?? PRODUCTS[0],
+    [filters.productId]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return PRODUCTS;
+    return PRODUCTS.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q)
+    );
+  }, [query]);
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={clsx(
+          "flex min-w-[240px] items-center justify-between gap-3 rounded-xl border border-slate-900/10 bg-white px-3 py-2 text-left text-sm text-slate-900 shadow-sm transition hover:border-primary/25",
+          open && "border-primary/40 ring-2 ring-primary/25"
+        )}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 text-slate-500">Product:</span>
+          <span className="truncate font-semibold">{current?.name ?? "Product"}</span>
+        </span>
+        <span className="text-slate-500" aria-hidden>
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path
+              d="M5 7.5 10 12.5l5-5"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </button>
+
+      {open ? (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-30 cursor-default bg-transparent"
+            aria-label="Close product menu"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute right-0 z-40 mt-2 w-[min(100vw-2rem,520px)] overflow-hidden rounded-2xl border border-slate-900/10 bg-white shadow-glass">
+            <div className="border-b border-slate-900/10 p-3 relative">
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search products…"
+                className="w-full rounded-xl border border-slate-900/10 bg-white px-10 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/15"
+              />
+              <div className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M21 21l-4.3-4.3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <ul
+              role="listbox"
+              className="max-h-72 overflow-auto p-2"
+              tabIndex={-1}
+            >
+              {filtered.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={p.id === current?.id}
+                    className={clsx(
+                      "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-800 transition hover:bg-slate-900/[0.04]",
+                      p.id === current?.id && "bg-slate-900 text-white hover:bg-slate-900"
+                    )}
+                    onClick={() => {
+                      setProductId(p.id);
+                      setOpen(false);
+                      setQuery("");
+                    }}
+                  >
+                    <span className="truncate">{p.name}</span>
+                    {p.id === current?.id ? (
+                      <span className="shrink-0 text-white/90" aria-hidden>
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                          <path
+                            d="M4 10.5 8.2 14.5 16 6.5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    ) : null}
+                  </button>
+                </li>
+              ))}
+              {!filtered.length ? (
+                <li className="px-3 py-2 text-sm text-slate-500">No matches</li>
+              ) : null}
+            </ul>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
