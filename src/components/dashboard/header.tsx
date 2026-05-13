@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { AppLogo } from "@/components/brand/app-logo";
 import { ProductSelect } from "./product-select";
 import { UserMenu } from "./user-menu";
 
@@ -10,13 +10,10 @@ export function DashboardHeader() {
       <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex h-10 shrink-0 items-center">
-            <Image
-              src="/logo.png"
-              alt="Ciright logo"
-              width={160}
-              height={48}
+            <AppLogo
+              className="h-7 w-auto shrink-0"
+              title="Ciright"
               priority
-              className="h-7 w-auto"
             />
           </div>
           <div className="min-w-0">

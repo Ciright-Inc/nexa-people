@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+
+import { AppLogo } from "@/components/brand/app-logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -96,14 +97,7 @@ export default function LoginPage() {
       <div className="glass-panel w-full max-w-md p-8">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 items-center justify-center">
-            <Image
-              src="/logo.png"
-              alt="App logo"
-              width={160}
-              height={48}
-              priority
-              className="h-10 w-auto"
-            />
+            <AppLogo className="h-10 w-auto" title="Ciright" priority />
           </div>
           <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
             Nexa People

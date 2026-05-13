@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Suspense,
   createContext,
   useCallback,
   useContext,
@@ -100,7 +101,29 @@ function stateFromSearchParams(
   };
 }
 
+function FiltersFallback() {
+  return (
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-[#f3f4f6] px-6">
+      <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 border-t-primary" />
+      <p className="text-sm font-medium text-slate-600">Preparing filters…</p>
+    </div>
+  );
+}
+
+/** Next.js 15: `useSearchParams()` must be under a Suspense boundary — keep it inside this module. */
 export function DashboardFiltersProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={<FiltersFallback />}>
+      <DashboardFiltersProviderImpl>{children}</DashboardFiltersProviderImpl>
+    </Suspense>
+  );
+}
+
+function DashboardFiltersProviderImpl({
   children,
 }: {
   children: React.ReactNode;
@@ -112,9 +135,12 @@ export function DashboardFiltersProvider({
     stateFromSearchParams(new URLSearchParams(searchParams.toString()))
   );
 
+  const searchParamsKey = useMemo(() => searchParams.toString(), [searchParams]);
+
   useEffect(() => {
-    setFilters((prev) => stateFromSearchParams(searchParams, prev));
-  }, [searchParams]);
+    const next = new URLSearchParams(searchParamsKey);
+    setFilters((prev) => stateFromSearchParams(next, prev));
+  }, [searchParamsKey]);
 
   const pushParams = useCallback(
     (next: DashboardFiltersState) => {
@@ -228,6 +254,7 @@ export function DashboardFiltersProvider({
     </DashboardFiltersContext.Provider>
   );
 }
+
 
 export function useDashboardFilters() {
   const ctx = useContext(DashboardFiltersContext);

@@ -19,11 +19,9 @@ const PRIMARY = "#003087";
 const PRIMARY_MUTED = "#1e4a9e";
 const PRIMARY_LIGHT = "#94b4e8";
 
-/** Esri World Light Gray (base + reference): English-centric labels on raster tiles. Carto/OSM raster tiles bake in multilingual names with no client-side override. */
-const ESRI_LIGHT_GRAY_BASE =
-  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}";
-const ESRI_LIGHT_GRAY_REFERENCE =
-  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}";
+/** Carto Positron (`light_all`): light raster basemap used with Leaflet; attribution OSM + CARTO. */
+const TILE_URL =
+  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
 function engagementFill(b: EngagementBand, selected: boolean) {
   if (selected) return PRIMARY;
@@ -138,17 +136,17 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
     mapRef.current = map;
 
     const tileOpts: L.TileLayerOptions = {
+      attribution: "",
+      subdomains: "abcd",
       maxZoom: 20,
-      maxNativeZoom: 19,
+      maxNativeZoom: 20,
       keepBuffer: 4,
       updateWhenIdle: false,
       updateInterval: 75,
-      attribution: "",
       crossOrigin: true,
       className: "world-map-tiles",
     };
-    L.tileLayer(ESRI_LIGHT_GRAY_BASE, tileOpts).addTo(map);
-    L.tileLayer(ESRI_LIGHT_GRAY_REFERENCE, tileOpts).addTo(map);
+    L.tileLayer(TILE_URL, tileOpts).addTo(map);
 
     const markers: Record<string, L.CircleMarker> = {};
     const geoId = filtersRef.current.geographyId;
@@ -197,7 +195,7 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
       map.invalidateSize({ animate: false });
     };
 
-    let bumpRaf = 0;
+    let bumpRaf: number = 0;
     const scheduleBump = () => {
       if (bumpRaf) cancelAnimationFrame(bumpRaf);
       bumpRaf = requestAnimationFrame(() => {
@@ -211,12 +209,12 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
       requestAnimationFrame(bump);
     });
 
-    const timeouts = [0, 150, 400].map((ms) => window.setTimeout(bump, ms));
+    const timeouts = [0, 150, 400].map((ms) => window.setTimeout(bump, ms) as number);
 
-    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+    let resizeTimer: number | undefined;
     const onWinResize = () => {
       window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(bump, 120);
+      resizeTimer = window.setTimeout(bump, 120) as number;
     };
     window.addEventListener("resize", onWinResize);
 
@@ -369,26 +367,25 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
 
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 border-t border-slate-100 px-3 pt-3 pb-3 sm:px-4">
         <p className="max-w-[min(100%,52rem)] text-[10px] leading-snug text-slate-500">
-          Labels are English-centric (Esri World Light Gray). Zoom in for more place detail.
-          Attribution:{" "}
-          <a
-            className="text-slate-600 underline-offset-2 hover:underline"
-            href="https://www.esri.com/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            © Esri
-          </a>
-          , Garmin, HERE,{" "}
+          Leaflet | ©{" "}
           <a
             className="text-slate-600 underline-offset-2 hover:underline"
             href="https://www.openstreetmap.org/copyright"
             target="_blank"
             rel="noreferrer"
           >
-            © OpenStreetMap
+            OpenStreetMap
           </a>{" "}
-          contributors, and other sources.
+          contributors ©{" "}
+          <a
+            className="text-slate-600 underline-offset-2 hover:underline"
+            href="https://carto.com/attributions/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            CARTO
+          </a>
+          . Zoom in for country, state, city, and village labels from tiles.
         </p>
         <button
           type="button"
