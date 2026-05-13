@@ -26,6 +26,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+npm-done.txt
+npm-out.txt
+npm2.txt
+npm-install.log
 
 # env files
 .env*.local
