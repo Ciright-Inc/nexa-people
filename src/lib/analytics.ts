@@ -1,4 +1,5 @@
 import type { DashboardFiltersState } from "./types";
+import { MAP_POINTS } from "./mock-data";
 
 function hashSeed(str: string): number {
   let h = 2166136261;
@@ -38,7 +39,7 @@ export function getKpis(filters: DashboardFiltersState): KpiPack {
   const key = [
     filters.productId,
     filters.geographyId ?? "global",
-    filters.platform,
+    [...filters.platforms].sort().join(","),
     filters.segment,
     filters.datePreset,
   ].join("|");
@@ -131,4 +132,38 @@ export function getSegments(filters: DashboardFiltersState): SegmentRow[] {
     share: Number((r.base + (rnd() - 0.5) * 0.06).toFixed(2)),
     sessions: Math.round(80000 * (0.7 + rnd() * 0.5)),
   }));
+}
+
+export type DemandPoint = { t: string; v: number };
+
+export function getDemandNormalizedSeries(
+  filters: DashboardFiltersState
+): DemandPoint[] {
+  const raw = getActiveSeries(filters);
+  const maxU = Math.max(...raw.map((r) => r.users), 1);
+  return raw.map((r) => ({
+    t: r.t,
+    v: Number((r.users / maxU).toFixed(4)),
+  }));
+}
+
+export type RegionalNetworkRow = {
+  market: string;
+  status: "optimal" | "high load" | "maintenance";
+  ping: number;
+};
+
+export function getRegionalNetworkRows(
+  filters: DashboardFiltersState
+): RegionalNetworkRow[] {
+  const rnd = mulberry32(
+    hashSeed(`regional|${filters.productId}|${filters.geographyId ?? "g"}`)
+  );
+  return MAP_POINTS.map((pt) => {
+    const roll = rnd();
+    const status: RegionalNetworkRow["status"] =
+      roll > 0.88 ? "maintenance" : roll > 0.58 ? "high load" : "optimal";
+    const ping = Math.round(14 + rnd() * 165);
+    return { market: pt.name, status, ping };
+  });
 }

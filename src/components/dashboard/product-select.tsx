@@ -31,7 +31,7 @@ export function ProductSelect() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={clsx(
-          "flex min-w-[240px] items-center justify-between gap-3 rounded-xl border border-slate-900/10 bg-white px-3 py-2 text-left text-sm text-slate-900 shadow-sm transition hover:border-primary/25",
+          "flex min-w-[240px] items-center justify-between gap-3 rounded-xl border border-slate-900/10 bg-white px-3 py-2 text-left text-sm text-slate-800 shadow-sm transition hover:border-primary/25",
           open && "border-primary/40 ring-2 ring-primary/25"
         )}
         aria-expanded={open}
@@ -39,7 +39,7 @@ export function ProductSelect() {
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className="shrink-0 text-slate-500">Product:</span>
-          <span className="truncate font-semibold">{current?.name ?? "Product"}</span>
+          <span className="truncate font-semibold text-primary">{current?.name ?? "Product"}</span>
         </span>
         <span className="text-slate-500" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -100,7 +100,8 @@ export function ProductSelect() {
                     aria-selected={p.id === current?.id}
                     className={clsx(
                       "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-800 transition hover:bg-slate-900/[0.04]",
-                      p.id === current?.id && "bg-slate-900 text-white hover:bg-slate-900"
+                      p.id === current?.id &&
+                        "bg-primary text-white hover:bg-primary-muted"
                     )}
                     onClick={() => {
                       setProductId(p.id);

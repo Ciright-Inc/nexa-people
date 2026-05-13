@@ -5,10 +5,10 @@ import type { DateRangePreset } from "@/lib/types";
 import { useDashboardFilters } from "@/context/dashboard-filters";
 
 const PRESETS: { id: DateRangePreset; label: string }[] = [
-  { id: "7d", label: "7d" },
-  { id: "30d", label: "30d" },
-  { id: "90d", label: "90d" },
-  { id: "qtd", label: "QTD" },
+  { id: "7d", label: "Last 7 days" },
+  { id: "30d", label: "Last 30 days" },
+  { id: "90d", label: "Last 90 days" },
+  { id: "qtd", label: "Quarter to date" },
   { id: "custom", label: "Custom" },
 ];
 
@@ -16,18 +16,18 @@ export function DateRangeControl() {
   const { filters, setDatePreset, setCustomRange } = useDashboardFilters();
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-      <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-wrap gap-2">
         {PRESETS.map((p) => (
           <button
             key={p.id}
             type="button"
             onClick={() => setDatePreset(p.id)}
             className={clsx(
-              "rounded-full border px-3 py-1 text-xs font-medium transition hover-lift",
+              "rounded-full border px-4 py-2 text-xs font-semibold transition",
               filters.datePreset === p.id
-                ? "border-primary/30 bg-primary/10 text-slate-900 shadow-sm"
-                : "border-slate-900/10 bg-white/80 text-slate-700 shadow-sm hover:border-primary/20"
+                ? "border-primary bg-primary text-white shadow-sm"
+                : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50"
             )}
           >
             {p.label}
@@ -42,7 +42,7 @@ export function DateRangeControl() {
             onChange={(e) =>
               setCustomRange(e.target.value || null, filters.customTo)
             }
-            className="rounded-lg border border-slate-900/10 bg-white/80 px-2 py-1 text-xs text-slate-900 shadow-sm focus:border-primary/25 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 shadow-sm focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
           <span className="text-xs text-slate-500">to</span>
           <input
@@ -51,7 +51,7 @@ export function DateRangeControl() {
             onChange={(e) =>
               setCustomRange(filters.customFrom, e.target.value || null)
             }
-            className="rounded-lg border border-slate-900/10 bg-white/80 px-2 py-1 text-xs text-slate-900 shadow-sm focus:border-primary/25 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 shadow-sm focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
         </div>
       ) : null}

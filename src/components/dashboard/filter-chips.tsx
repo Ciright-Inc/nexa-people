@@ -1,26 +1,31 @@
 "use client";
 
-import { clsx } from "clsx";
+import type { PlatformFilter } from "@/lib/types";
 import { useDashboardFilters } from "@/context/dashboard-filters";
 
+const ALL: PlatformFilter = ["web", "ios", "android"];
+
+function isAllPlatforms(p: string[]) {
+  return new Set(p).size === ALL.length;
+}
+
 export function FilterChips() {
-  const { filters, setGeography, setPlatform, setSegment, clearAll } =
+  const { filters, setGeography, setPlatforms, setSegment, clearAll } =
     useDashboardFilters();
 
   const chips: { key: string; label: string; onRemove: () => void }[] = [];
-
   if (filters.geographyLabel && filters.geographyId) {
     chips.push({
       key: "geo",
-      label: `Region: ${filters.geographyLabel}`,
+      label: filters.geographyLabel,
       onRemove: () => setGeography(null, null),
     });
   }
-  if (filters.platform !== "all") {
+  if (!isAllPlatforms(filters.platforms)) {
     chips.push({
       key: "platform",
-      label: `Platform: ${filters.platform}`,
-      onRemove: () => setPlatform("all"),
+      label: `Platform: ${filters.platforms.join(", ")}`,
+      onRemove: () => setPlatforms([...ALL]),
     });
   }
   if (filters.segment !== "all") {
@@ -31,39 +36,25 @@ export function FilterChips() {
     });
   }
 
-  const hasFilters = chips.length > 0 || filters.datePreset !== "30d";
+  if (!chips.length) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-slate-900/10 bg-white/70 px-4 py-2.5 backdrop-blur-md sm:px-6 lg:px-8">
-      <span className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-        Active filters
-      </span>
-      <div className="flex flex-wrap gap-2">
-        {chips.map((c) => (
-          <button
-            key={c.key}
-            type="button"
-            onClick={c.onRemove}
-            className="glass-chip hover-lift flex items-center gap-1.5 text-slate-800"
-          >
-            {c.label}
-            <span className="text-slate-500">×</span>
-          </button>
-        ))}
-        {!chips.length ? (
-          <span className="text-xs text-slate-500">
-            Defaults — last 30 days, global
-          </span>
-        ) : null}
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
+      {chips.map((c) => (
+        <button
+          key={c.key}
+          type="button"
+          onClick={c.onRemove}
+          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+        >
+          {c.label}
+          <span className="text-slate-400">×</span>
+        </button>
+      ))}
       <button
         type="button"
         onClick={clearAll}
-        disabled={!hasFilters}
-        className={clsx(
-          "ml-auto text-xs font-medium underline-offset-4 hover:underline",
-          hasFilters ? "text-primary" : "cursor-not-allowed text-slate-400"
-        )}
+        className="text-xs font-semibold text-slate-500 underline-offset-2 hover:text-slate-800 hover:underline"
       >
         Clear all
       </button>

@@ -7,7 +7,10 @@ export type DateRangePreset =
   | "qtd"
   | "custom";
 
-export type PlatformFilter = "all" | "web" | "ios" | "android";
+export type PlatformKey = "web" | "ios" | "android";
+
+/** One or more platforms; all three selected means “all platforms” for analytics. */
+export type PlatformFilter = PlatformKey[];
 
 export type SegmentFilter = "all" | "enterprise" | "pro" | "free";
 
@@ -36,6 +39,6 @@ export type DashboardFiltersState = {
   customTo: string | null;
   geographyId: string | null;
   geographyLabel: string | null;
-  platform: PlatformFilter;
+  platforms: PlatformFilter;
   segment: SegmentFilter;
 };

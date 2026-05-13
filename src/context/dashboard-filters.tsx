@@ -13,9 +13,22 @@ import type {
   DashboardFiltersState,
   DateRangePreset,
   PlatformFilter,
+  PlatformKey,
   SegmentFilter,
 } from "@/lib/types";
 import { PRODUCTS } from "@/lib/mock-data";
+
+const ALL_PLATFORMS: PlatformKey[] = ["web", "ios", "android"];
+
+function sortUniquePlatforms(p: PlatformKey[]): PlatformFilter {
+  return Array.from(new Set(p)).sort(
+    (a, b) => ALL_PLATFORMS.indexOf(a) - ALL_PLATFORMS.indexOf(b)
+  );
+}
+
+function isFullPlatformSelection(p: PlatformFilter) {
+  return sortUniquePlatforms(p).length === ALL_PLATFORMS.length;
+}
 
 const defaultState = (): DashboardFiltersState => ({
   productId: PRODUCTS[0]?.id ?? "",
@@ -24,7 +37,7 @@ const defaultState = (): DashboardFiltersState => ({
   customTo: null,
   geographyId: null,
   geographyLabel: null,
-  platform: "all",
+  platforms: [...ALL_PLATFORMS],
   segment: "all",
 });
 
@@ -34,9 +47,15 @@ function parsePreset(v: string | null): DateRangePreset {
   return "30d";
 }
 
-function parsePlatform(v: string | null): PlatformFilter {
-  if (v === "web" || v === "ios" || v === "android" || v === "all") return v;
-  return "all";
+function parsePlatforms(v: string | null): PlatformFilter {
+  if (!v) return [...ALL_PLATFORMS];
+  const parts = v.split(",").map((s) => s.trim());
+  const picked: PlatformKey[] = [];
+  for (const p of parts) {
+    if (p === "web" || p === "ios" || p === "android") picked.push(p);
+  }
+  const u = sortUniquePlatforms(picked);
+  return u.length > 0 ? u : [...ALL_PLATFORMS];
 }
 
 function parseSegment(v: string | null): SegmentFilter {
@@ -50,9 +69,10 @@ type DashboardFiltersContextValue = {
   setDatePreset: (p: DateRangePreset) => void;
   setCustomRange: (from: string | null, to: string | null) => void;
   setGeography: (id: string | null, label: string | null) => void;
-  setPlatform: (p: PlatformFilter) => void;
+  setPlatforms: (p: PlatformFilter) => void;
   setSegment: (s: SegmentFilter) => void;
   clearAll: () => void;
+  resetAnalyticsFilters: () => void;
 };
 
 const DashboardFiltersContext = createContext<DashboardFiltersContextValue | null>(
@@ -75,7 +95,7 @@ function stateFromSearchParams(
     customTo: searchParams.get("to"),
     geographyId: searchParams.get("geo"),
     geographyLabel: searchParams.get("geoLabel"),
-    platform: parsePlatform(searchParams.get("platform")),
+    platforms: parsePlatforms(searchParams.get("platform")),
     segment: parseSegment(searchParams.get("segment")),
   };
 }
@@ -109,7 +129,9 @@ export function DashboardFiltersProvider({
         p.set("geo", next.geographyId);
         if (next.geographyLabel) p.set("geoLabel", next.geographyLabel);
       }
-      if (next.platform !== "all") p.set("platform", next.platform);
+      if (!isFullPlatformSelection(next.platforms)) {
+        p.set("platform", sortUniquePlatforms(next.platforms).join(","));
+      }
       if (next.segment !== "all") p.set("segment", next.segment);
       router.replace(`${pathname}?${p.toString()}`, { scroll: false });
       setFilters(next);
@@ -150,8 +172,14 @@ export function DashboardFiltersProvider({
     [filters, pushParams]
   );
 
-  const setPlatform = useCallback(
-    (platform: PlatformFilter) => pushParams({ ...filters, platform }),
+  const setPlatforms = useCallback(
+    (platforms: PlatformFilter) => {
+      const next = sortUniquePlatforms(platforms);
+      pushParams({
+        ...filters,
+        platforms: next.length > 0 ? next : [...ALL_PLATFORMS],
+      });
+    },
     [filters, pushParams]
   );
 
@@ -164,6 +192,11 @@ export function DashboardFiltersProvider({
     pushParams(defaultState());
   }, [pushParams]);
 
+  const resetAnalyticsFilters = useCallback(() => {
+    const base = defaultState();
+    pushParams({ ...base, productId: filters.productId });
+  }, [filters.productId, pushParams]);
+
   const value = useMemo(
     () => ({
       filters,
@@ -171,9 +204,10 @@ export function DashboardFiltersProvider({
       setDatePreset,
       setCustomRange,
       setGeography,
-      setPlatform,
+      setPlatforms,
       setSegment,
       clearAll,
+      resetAnalyticsFilters,
     }),
     [
       filters,
@@ -181,9 +215,10 @@ export function DashboardFiltersProvider({
       setDatePreset,
       setCustomRange,
       setGeography,
-      setPlatform,
+      setPlatforms,
       setSegment,
       clearAll,
+      resetAnalyticsFilters,
     ]
   );
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { DashboardHeader } from "./header";
-import { FilterChips } from "./filter-chips";
 import { GlobalControls } from "./global-controls";
 import { WorldMapScatter } from "./world-map";
 import { KpiGrid } from "./kpi-grid";
@@ -11,15 +10,29 @@ export function DashboardShell() {
   return (
     <div className="flex min-h-dvh flex-col">
       <DashboardHeader />
-      <FilterChips />
-      <main className="flex-1 space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:px-8">
-        <GlobalControls />
+      <main className="mx-auto w-full max-w-[1400px] flex-1 space-y-10 px-4 py-8 sm:px-6 lg:space-y-12 lg:px-10 lg:py-10">
         <WorldMapScatter />
-        <KpiGrid />
-        <ChartsSection />
+
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-primary sm:text-xl">
+              Performance analytics
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-slate-500">
+              Filters, KPIs, and demand signals update together for a single view of
+              workforce activity.
+            </p>
+          </div>
+
+          <GlobalControls />
+          <KpiGrid />
+          <ChartsSection />
+        </section>
       </main>
-      <footer className="border-t border-slate-900/10 px-4 py-4 text-xs leading-tight text-slate-500 sm:px-6 lg:px-8">
-        <p className="text-center">©{new Date().getFullYear()} Ciright. All Rights Reserved.</p>
+      <footer className="border-t border-slate-200/90 bg-white/80 px-4 py-4 text-xs leading-tight text-slate-500 sm:px-6 lg:px-10">
+        <p className="text-center">
+          ©{new Date().getFullYear()} Ciright. All Rights Reserved.
+        </p>
       </footer>
     </div>
   );

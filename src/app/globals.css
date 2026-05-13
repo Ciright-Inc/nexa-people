@@ -23,18 +23,22 @@ html {
 body {
   @apply min-h-dvh antialiased;
   background:
-    radial-gradient(1200px 600px at 12% -10%, rgba(0, 48, 135, 0.16), transparent 55%),
-    radial-gradient(900px 520px at 92% 6%, rgba(0, 80, 180, 0.10), transparent 55%),
-    linear-gradient(180deg, #ffffff 0%, var(--bg-deep) 100%);
+    radial-gradient(900px 480px at 50% -8%, rgba(0, 48, 135, 0.06), transparent 55%),
+    linear-gradient(180deg, #fafbfc 0%, #f3f4f6 100%);
   color: var(--text-primary);
 }
 
 @layer utilities {
   .glass-panel {
-    @apply rounded-xl border border-slate-900/10 bg-white/70 shadow-glass backdrop-blur-xl;
-    box-shadow:
-      0 10px 40px rgba(15, 23, 42, 0.10),
-      inset 0 1px 0 rgba(255, 255, 255, 0.70);
+    @apply rounded-2xl border border-slate-200/90 bg-white shadow-premium;
+  }
+
+  .dash-card {
+    @apply rounded-2xl border border-slate-200/90 bg-white shadow-premium;
+  }
+
+  .dash-card-lg {
+    @apply rounded-2xl border border-slate-200/90 bg-white shadow-premiumLg;
   }
 
   .glass-chip {
@@ -50,7 +54,16 @@ body {
   }
 }
 
-/* react-simple-maps default fills */
-.rsm-geography:focus {
+/* Leaflet map pane */
+.leaflet-container {
+  font-family: inherit;
+}
+.leaflet-container:focus {
   outline: none;
+}
+
+/* Dashboard map: fewer tile hairlines + smoother compositing (Chromium/WebKit sub-pixel gaps). */
+.world-map-host .leaflet-tile-pane img.leaflet-tile {
+  outline: 1px solid transparent;
+  backface-visibility: hidden;
 }
