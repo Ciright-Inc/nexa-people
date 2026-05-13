@@ -1,94 +1,125 @@
 "use client";
 
 import { useMemo } from "react";
-import { clsx } from "clsx";
+import type { DashboardFiltersState } from "@/lib/types";
 import { useDashboardFilters } from "@/context/dashboard-filters";
-import { getKpis } from "@/lib/analytics";
+import { getHeroKpiMetrics } from "@/lib/analytics";
+import { DATE_RANGE_PRESETS } from "./date-range-control";
 
-function formatInt(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-  return String(n);
+function kpiWindowLabel(filters: DashboardFiltersState) {
+  if (filters.datePreset === "custom") return "Custom";
+  return DATE_RANGE_PRESETS.find((p) => p.id === filters.datePreset)?.label ?? "Selected window";
 }
 
-type CardProps = {
-  label: string;
-  value: string;
-  caption: string;
-  delta?: string;
-  positive?: boolean;
-  icon: string;
-};
-
-function KpiCard({ label, value, caption, delta, positive, icon }: CardProps) {
-  return (
-    <div className="dash-card group relative overflow-hidden p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-premiumLg">
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-base text-slate-400 transition group-hover:text-slate-600">
-          {icon}
-        </span>
-        {delta ? (
-          <span
-            className={clsx(
-              "rounded-full px-2.5 py-0.5 text-[11px] font-semibold tabular-nums",
-              positive
-                ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100"
-                : "bg-rose-50 text-rose-800 ring-1 ring-rose-100"
-            )}
-          >
-            {delta}
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-        {label}
-      </p>
-      <p className="mt-1.5 font-mono text-3xl font-semibold tracking-tight text-primary">
-        {value}
-      </p>
-      <p className="mt-2 text-xs leading-relaxed text-slate-500">{caption}</p>
-    </div>
-  );
-}
+const icons = [
+  function IconUsers() {
+    return (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    );
+  },
+  function IconSignal() {
+    return (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+        <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <path d="M12 20h.01" />
+      </svg>
+    );
+  },
+  function IconPulse() {
+    return (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+      </svg>
+    );
+  },
+  function IconBars() {
+    return (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M18 20V10M12 20V4M6 20v-6" />
+      </svg>
+    );
+  },
+];
 
 export function KpiGrid() {
   const { filters } = useDashboardFilters();
-  const kpis = useMemo(() => getKpis(filters), [filters]);
+  const rows = useMemo(() => getHeroKpiMetrics(filters), [filters]);
+  const windowName = useMemo(() => kpiWindowLabel(filters), [filters]);
+  const footer = `Modelled KPI for the filtered window (${windowName}).`;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiCard
-        icon="◎"
-        label="Active user base"
-        value={formatInt(kpis.mau)}
-        caption="Monthly actives across selected product and filters."
-        delta="+11.6%"
-        positive
-      />
-      <KpiCard
-        icon="◆"
-        label="Weekly engagement"
-        value={formatInt(kpis.wau)}
-        caption="Rolling seven-day reach; complements DAU for rhythm checks."
-        delta="+4.2%"
-        positive
-      />
-      <KpiCard
-        icon="▣"
-        label="Session depth"
-        value={`${(kpis.wau / Math.max(kpis.mau, 1)).toFixed(2)}×`}
-        caption="WAU / MAU blend — proxy for return cadence on this mock dataset."
-        delta="+0.8%"
-        positive
-      />
-      <KpiCard
-        icon="⟲"
-        label="Stickiness"
-        value={`${kpis.stickiness}%`}
-        caption="DAU / MAU ratio; higher values imply habitual daily usage."
-        delta="+0.6pp"
-        positive
-      />
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+      {rows.map((row, i) => {
+        const Icon = icons[i] ?? icons[0];
+        return (
+          <article
+            key={row.label}
+            className="flex flex-col rounded-[10px] border border-[#E0E0E0] bg-white px-4 pb-4 pt-3.5 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F0F0F0] text-[#666666]">
+                <Icon />
+              </div>
+              <span className="shrink-0 rounded-full bg-[#EEEEEE] px-2.5 py-1 text-[11px] font-semibold tabular-nums text-[#444444]">
+                {row.delta}
+              </span>
+            </div>
+            <h3 className="mt-4 text-[10px] font-bold uppercase leading-tight tracking-[0.12em] text-[#888888]">
+              {row.label}
+            </h3>
+            <p className="mt-1.5 text-[26px] font-bold leading-none tracking-tight text-black">
+              {row.value}
+            </p>
+            <p className="mt-auto pt-3 text-[10px] leading-snug text-[#888888]">{footer}</p>
+          </article>
+        );
+      })}
     </div>
   );
 }

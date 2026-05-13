@@ -6,7 +6,7 @@ import { UserMenu } from "./user-menu";
 
 export function DashboardHeader() {
   return (
-    <header className="sticky top-0 z-[1000] border-b border-slate-900/10 bg-white/75 shadow-card backdrop-blur-xl">
+    <header className="border-b border-slate-900/10 bg-white/75 shadow-card backdrop-blur-xl">
       <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex h-10 shrink-0 items-center">

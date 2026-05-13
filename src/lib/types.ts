@@ -7,6 +7,9 @@ export type DateRangePreset =
   | "qtd"
   | "custom";
 
+/** Matches dashboard filter defaults (URL + chips). */
+export const DASHBOARD_DEFAULT_MIN_ACTIVE_USERS = 250;
+
 export type PlatformKey = "web" | "ios" | "android";
 
 /** One or more platforms; all three selected means “all platforms” for analytics. */
@@ -41,4 +44,6 @@ export type DashboardFiltersState = {
   geographyLabel: string | null;
   platforms: PlatformFilter;
   segment: SegmentFilter;
+  /** Default 250; shown as a chip when changed from default. */
+  minActiveUsers: number;
 };

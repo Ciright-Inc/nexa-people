@@ -70,6 +70,45 @@ export function getKpis(filters: DashboardFiltersState): KpiPack {
   };
 }
 
+/** Hero KPI strip — deterministic from filters (layout matches product mock). */
+export type HeroKpiMetric = {
+  label: string;
+  value: string;
+  delta: string;
+};
+
+export function getHeroKpiMetrics(filters: DashboardFiltersState): HeroKpiMetric[] {
+  const rnd = mulberry32(
+    hashSeed(
+      `hero|${filters.productId}|${filters.datePreset}|${filters.geographyId ?? "g"}|${filters.segment}|${filters.minActiveUsers}`
+    )
+  );
+  const { mau } = getKpis(filters);
+  const displayMau = Math.round(mau * (88 + rnd() * 52));
+  const activeVal =
+    displayMau >= 1_000_000
+      ? `${(displayMau / 1_000_000).toFixed(1)}M`
+      : displayMau >= 1000
+        ? `${(displayMau / 1000).toFixed(1)}k`
+        : `${displayMau}`;
+
+  const latency = Math.round(32 + rnd() * 35);
+  const reqB = 1.1 + rnd() * 1.2;
+  const ingress = 2.0 + rnd() * 2.8;
+
+  const d1 = 8 + rnd() * 12;
+  const d2 = 2 + rnd() * 4;
+  const d3 = 5 + rnd() * 8;
+  const d4 = 18 + rnd() * 12;
+
+  return [
+    { label: "ACTIVE USER BASE", value: activeVal, delta: `+${d1.toFixed(1)}%` },
+    { label: "MEDIAN LATENCY PROXY", value: `${latency}ms`, delta: `${d2.toFixed(1)}%` },
+    { label: "REQUEST VOLUME ESTIMATE", value: `${reqB.toFixed(1)}B`, delta: `+${d3.toFixed(1)}%` },
+    { label: "INGRESS ESTIMATE", value: `${ingress.toFixed(1)} PB`, delta: `+${d4.toFixed(1)}%` },
+  ];
+}
+
 export type SeriesPoint = { t: string; users: number; sessions: number };
 
 export function getActiveSeries(filters: DashboardFiltersState): SeriesPoint[] {

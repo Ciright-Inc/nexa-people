@@ -17,6 +17,7 @@ import type {
   PlatformKey,
   SegmentFilter,
 } from "@/lib/types";
+import { DASHBOARD_DEFAULT_MIN_ACTIVE_USERS } from "@/lib/types";
 import { PRODUCTS } from "@/lib/mock-data";
 
 const ALL_PLATFORMS: PlatformKey[] = ["web", "ios", "android"];
@@ -40,6 +41,7 @@ const defaultState = (): DashboardFiltersState => ({
   geographyLabel: null,
   platforms: [...ALL_PLATFORMS],
   segment: "all",
+  minActiveUsers: DASHBOARD_DEFAULT_MIN_ACTIVE_USERS,
 });
 
 function parsePreset(v: string | null): DateRangePreset {
@@ -64,6 +66,14 @@ function parseSegment(v: string | null): SegmentFilter {
   return "all";
 }
 
+function parseMinActiveUsers(v: string | null): number {
+  if (!v) return DASHBOARD_DEFAULT_MIN_ACTIVE_USERS;
+  const n = Number.parseInt(v, 10);
+  if (Number.isNaN(n)) return DASHBOARD_DEFAULT_MIN_ACTIVE_USERS;
+  const clamped = Math.min(5000, Math.max(0, n));
+  return Math.round(clamped / 50) * 50;
+}
+
 type DashboardFiltersContextValue = {
   filters: DashboardFiltersState;
   setProductId: (id: string) => void;
@@ -72,6 +82,7 @@ type DashboardFiltersContextValue = {
   setGeography: (id: string | null, label: string | null) => void;
   setPlatforms: (p: PlatformFilter) => void;
   setSegment: (s: SegmentFilter) => void;
+  setMinActiveUsers: (n: number) => void;
   clearAll: () => void;
   resetAnalyticsFilters: () => void;
 };
@@ -98,6 +109,7 @@ function stateFromSearchParams(
     geographyLabel: searchParams.get("geoLabel"),
     platforms: parsePlatforms(searchParams.get("platform")),
     segment: parseSegment(searchParams.get("segment")),
+    minActiveUsers: parseMinActiveUsers(searchParams.get("minUsers")),
   };
 }
 
@@ -159,6 +171,9 @@ function DashboardFiltersProviderImpl({
         p.set("platform", sortUniquePlatforms(next.platforms).join(","));
       }
       if (next.segment !== "all") p.set("segment", next.segment);
+      if (next.minActiveUsers !== DASHBOARD_DEFAULT_MIN_ACTIVE_USERS) {
+        p.set("minUsers", String(next.minActiveUsers));
+      }
       router.replace(`${pathname}?${p.toString()}`, { scroll: false });
       setFilters(next);
     },
@@ -214,6 +229,15 @@ function DashboardFiltersProviderImpl({
     [filters, pushParams]
   );
 
+  const setMinActiveUsers = useCallback(
+    (minActiveUsers: number) => {
+      const clamped = Math.min(5000, Math.max(0, minActiveUsers));
+      const stepped = Math.round(clamped / 50) * 50;
+      pushParams({ ...filters, minActiveUsers: stepped });
+    },
+    [filters, pushParams]
+  );
+
   const clearAll = useCallback(() => {
     pushParams(defaultState());
   }, [pushParams]);
@@ -232,6 +256,7 @@ function DashboardFiltersProviderImpl({
       setGeography,
       setPlatforms,
       setSegment,
+      setMinActiveUsers,
       clearAll,
       resetAnalyticsFilters,
     }),
@@ -243,6 +268,7 @@ function DashboardFiltersProviderImpl({
       setGeography,
       setPlatforms,
       setSegment,
+      setMinActiveUsers,
       clearAll,
       resetAnalyticsFilters,
     ]
