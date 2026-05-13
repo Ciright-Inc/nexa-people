@@ -58,9 +58,9 @@ export function GlobalControls() {
 
   const analyticsDirty =
     chips.length > 0 ||
-    filters.datePreset !== "30d" ||
     (filters.datePreset === "custom" &&
       Boolean(filters.customFrom || filters.customTo)) ||
+    filters.datePreset !== "30d" ||
     !isAllPlatforms(filters.platforms) ||
     filters.segment !== "all";
 

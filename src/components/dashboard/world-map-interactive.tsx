@@ -80,7 +80,20 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
   const zoomIn = useCallback(() => mapRef.current?.zoomIn(), []);
   const zoomOut = useCallback(() => mapRef.current?.zoomOut(), []);
   const resetView = useCallback(() => {
-    mapRef.current?.setView([16, 0], 2, { animate: true });
+    const map = mapRef.current;
+    if (!map) return;
+    // Animated setView alone can leave GridLayers with an incomplete tile grid (gaps / partial
+    // paint) when combined with worldCopyJump and stacked tile sources. Finish the move, then
+    // re-measure and redraw tiles once.
+    map.setView([16, 0], 2, { animate: false });
+    map.invalidateSize({ animate: false });
+    requestAnimationFrame(() => {
+      map.invalidateSize({ animate: false });
+      map.eachLayer((layer) => {
+        const tl = layer as L.TileLayer;
+        if (typeof tl.redraw === "function") tl.redraw();
+      });
+    });
   }, []);
 
   const syncMarkerSelection = useCallback((geoId: string | null) => {
