@@ -10,6 +10,12 @@ export type DateRangePreset =
 /** Matches dashboard filter defaults (URL + chips). */
 export const DASHBOARD_DEFAULT_MIN_ACTIVE_USERS = 250;
 
+/** Upper bound for the “minimum active users” slider and URL param. */
+export const DASHBOARD_MAX_MIN_ACTIVE_USERS = 120_000;
+
+/** Slider / URL stepping for min active users. */
+export const DASHBOARD_MIN_ACTIVE_USERS_STEP = 50;
+
 export type PlatformKey = "web" | "ios" | "android";
 
 /** One or more platforms; all three selected means “all platforms” for analytics. */

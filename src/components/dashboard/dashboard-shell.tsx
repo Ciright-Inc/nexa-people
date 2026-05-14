@@ -6,6 +6,7 @@ import { GlobalControls } from "./global-controls";
 import { WorldMapScatter } from "./world-map";
 import { KpiGrid } from "./kpi-grid";
 import { ChartsSection } from "./charts-section";
+import { PerformanceAnalyticsHeading } from "./performance-analytics-heading";
 
 export function DashboardShell() {
   return (
@@ -18,15 +19,7 @@ export function DashboardShell() {
         <WorldMapScatter />
 
         <section className="space-y-8">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight text-primary sm:text-xl">
-              Performance analytics
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm text-slate-500">
-              Filters, KPIs, and demand signals update together for a single view of
-              workforce activity.
-            </p>
-          </div>
+          <PerformanceAnalyticsHeading />
 
           <GlobalControls />
           <KpiGrid />

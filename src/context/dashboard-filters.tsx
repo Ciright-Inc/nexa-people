@@ -17,7 +17,7 @@ import type {
   PlatformKey,
   SegmentFilter,
 } from "@/lib/types";
-import { DASHBOARD_DEFAULT_MIN_ACTIVE_USERS } from "@/lib/types";
+import { DASHBOARD_DEFAULT_MIN_ACTIVE_USERS, DASHBOARD_MAX_MIN_ACTIVE_USERS, DASHBOARD_MIN_ACTIVE_USERS_STEP } from "@/lib/types";
 import { PRODUCTS } from "@/lib/mock-data";
 
 const ALL_PLATFORMS: PlatformKey[] = ["web", "ios", "android"];
@@ -70,8 +70,11 @@ function parseMinActiveUsers(v: string | null): number {
   if (!v) return DASHBOARD_DEFAULT_MIN_ACTIVE_USERS;
   const n = Number.parseInt(v, 10);
   if (Number.isNaN(n)) return DASHBOARD_DEFAULT_MIN_ACTIVE_USERS;
-  const clamped = Math.min(5000, Math.max(0, n));
-  return Math.round(clamped / 50) * 50;
+  const clamped = Math.min(
+    DASHBOARD_MAX_MIN_ACTIVE_USERS,
+    Math.max(0, n)
+  );
+  return Math.round(clamped / DASHBOARD_MIN_ACTIVE_USERS_STEP) * DASHBOARD_MIN_ACTIVE_USERS_STEP;
 }
 
 type DashboardFiltersContextValue = {
@@ -231,8 +234,13 @@ function DashboardFiltersProviderImpl({
 
   const setMinActiveUsers = useCallback(
     (minActiveUsers: number) => {
-      const clamped = Math.min(5000, Math.max(0, minActiveUsers));
-      const stepped = Math.round(clamped / 50) * 50;
+      const clamped = Math.min(
+        DASHBOARD_MAX_MIN_ACTIVE_USERS,
+        Math.max(0, minActiveUsers)
+      );
+      const stepped =
+        Math.round(clamped / DASHBOARD_MIN_ACTIVE_USERS_STEP) *
+        DASHBOARD_MIN_ACTIVE_USERS_STEP;
       pushParams({ ...filters, minActiveUsers: stepped });
     },
     [filters, pushParams]

@@ -25,25 +25,30 @@ export function DateRangeControl({ layout = "inline" }: DateRangeControlProps) {
     <div
       className={clsx(
         "flex flex-col gap-4",
-        !stacked && "sm:flex-row sm:items-center sm:gap-4"
+        !stacked && "sm:flex-row sm:items-start sm:gap-4"
       )}
     >
-      <div className="flex flex-wrap gap-2">
-        {DATE_RANGE_PRESETS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => setDatePreset(p.id)}
-            className={clsx(
-              "rounded-full border px-4 py-2 text-xs font-semibold transition",
-              filters.datePreset === p.id
-                ? "border-slate-900 bg-slate-900 text-white shadow-sm"
-                : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50"
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
+      <div className={clsx("flex min-w-0 flex-col gap-3", !stacked && "sm:flex-1")}>
+        <div className="flex flex-wrap gap-2">
+          {DATE_RANGE_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setDatePreset(p.id)}
+              className={clsx(
+                "rounded-full border px-4 py-2 text-xs font-semibold transition",
+                filters.datePreset === p.id
+                  ? "border-primary bg-primary text-white shadow-sm hover:bg-primary-muted"
+                  : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <p className="max-w-2xl text-xs leading-relaxed text-slate-500">
+          Preset windows scale KPIs proportionally until live warehouse wiring is in place.
+        </p>
       </div>
       {filters.datePreset === "custom" ? (
         <div

@@ -1,8 +1,13 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { clsx } from "clsx";
 import type { PlatformKey } from "@/lib/types";
-import { DASHBOARD_DEFAULT_MIN_ACTIVE_USERS } from "@/lib/types";
+import {
+  DASHBOARD_DEFAULT_MIN_ACTIVE_USERS,
+  DASHBOARD_MAX_MIN_ACTIVE_USERS,
+  DASHBOARD_MIN_ACTIVE_USERS_STEP,
+} from "@/lib/types";
 import { useDashboardFilters } from "@/context/dashboard-filters";
 import { DateRangeControl } from "./date-range-control";
 
@@ -77,7 +82,7 @@ export function GlobalControls() {
                   (map + KPI gating)
                 </span>
               </h3>
-              <span className="shrink-0 font-mono text-sm font-bold tabular-nums text-slate-900 sm:pt-0.5">
+              <span className="shrink-0 font-mono text-sm font-bold tabular-nums text-primary sm:pt-0.5">
                 ≥ {filters.minActiveUsers.toLocaleString()}
               </span>
             </div>
@@ -85,15 +90,20 @@ export function GlobalControls() {
               id="min-users"
               type="range"
               min={0}
-              max={5000}
-              step={50}
+              max={DASHBOARD_MAX_MIN_ACTIVE_USERS}
+              step={DASHBOARD_MIN_ACTIVE_USERS_STEP}
               value={filters.minActiveUsers}
               onChange={(e) => setMinActiveUsers(Number(e.target.value))}
-              className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-slate-900 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-900 [&::-webkit-slider-thumb]:shadow-md"
+              className="dash-range-primary"
+              style={
+                {
+                  "--range-fill": `${(filters.minActiveUsers / DASHBOARD_MAX_MIN_ACTIVE_USERS) * 100}%`,
+                } as CSSProperties
+              }
             />
             <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
               <span>0</span>
-              <span>5k</span>
+              <span>120k</span>
             </div>
           </div>
 
@@ -114,7 +124,7 @@ export function GlobalControls() {
                   <label className="flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-800">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30"
+                      className="h-4 w-4 shrink-0 cursor-pointer rounded border border-slate-300 accent-primary focus:outline-none focus:ring-2 focus:ring-primary/25 focus:ring-offset-0"
                       checked={filters.platforms.includes(id)}
                       onChange={(e) => handlePlatformChange(id, e.target.checked)}
                     />

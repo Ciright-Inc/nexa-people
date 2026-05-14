@@ -39,7 +39,7 @@ export function ProductSelect() {
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className="shrink-0 text-slate-500">Product:</span>
-          <span className="truncate font-semibold text-primary">{current?.name ?? "Product"}</span>
+          <span className="truncate font-semibold text-slate-900">{current?.name ?? "Product"}</span>
         </span>
         <span className="text-slate-500" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none">

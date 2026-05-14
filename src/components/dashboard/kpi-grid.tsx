@@ -11,81 +11,66 @@ function kpiWindowLabel(filters: DashboardFiltersState) {
   return DATE_RANGE_PRESETS.find((p) => p.id === filters.datePreset)?.label ?? "Selected window";
 }
 
-const icons = [
-  function IconUsers() {
-    return (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.65"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    );
-  },
-  function IconSignal() {
-    return (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.65"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="M5 12.55a11 11 0 0 1 14.08 0" />
-        <path d="M1.42 9a16 16 0 0 1 21.16 0" />
-        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-        <path d="M12 20h.01" />
-      </svg>
-    );
-  },
-  function IconPulse() {
-    return (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.65"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg>
-    );
-  },
-  function IconBars() {
-    return (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.65"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="M18 20V10M12 20V4M6 20v-6" />
-      </svg>
-    );
-  },
-];
+const iconSvgProps = {
+  xmlns: "http://www.w3.org/2000/svg" as const,
+  width: 16,
+  height: 16,
+  viewBox: "0 0 24 24" as const,
+  fill: "none" as const,
+  stroke: "currentColor" as const,
+  strokeWidth: 1.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  className: "shrink-0",
+  "aria-hidden": true as const,
+};
+
+/** Lucide `users-round` (paths match lucide-react source). */
+function IconUsersRound() {
+  return (
+    <svg {...iconSvgProps}>
+      <path d="M18 21a8 8 0 0 0-16 0" />
+      <circle cx="10" cy="8" r="5" />
+      <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" />
+    </svg>
+  );
+}
+
+/** Lucide `radio`. */
+function IconRadio() {
+  return (
+    <svg {...iconSvgProps}>
+      <path d="M16.247 7.761a6 6 0 0 1 0 8.478" />
+      <path d="M19.075 4.933a10 10 0 0 1 0 14.134" />
+      <path d="M4.925 19.067a10 10 0 0 1 0-14.134" />
+      <path d="M7.753 16.239a6 6 0 0 1 0-8.478" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+/** Lucide `activity`. */
+function IconActivity() {
+  return (
+    <svg {...iconSvgProps}>
+      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+    </svg>
+  );
+}
+
+/** Lucide `chart-column`. */
+function IconChartColumn() {
+  return (
+    <svg {...iconSvgProps}>
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="M18 17V9" />
+      <path d="M13 17V5" />
+      <path d="M8 17v-3" />
+    </svg>
+  );
+}
+
+const icons = [IconUsersRound, IconRadio, IconActivity, IconChartColumn];
 
 export function KpiGrid() {
   const { filters } = useDashboardFilters();
@@ -94,29 +79,29 @@ export function KpiGrid() {
   const footer = `Modelled KPI for the filtered window (${windowName}).`;
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-4">
       {rows.map((row, i) => {
         const Icon = icons[i] ?? icons[0];
         return (
           <article
             key={row.label}
-            className="flex flex-col rounded-[10px] border border-[#E0E0E0] bg-white px-4 pb-4 pt-3.5 shadow-sm"
+            className="flex flex-col rounded-xl border border-slate-200/90 bg-white px-3.5 pb-3 pt-3 shadow-premium ring-1 ring-slate-900/[0.03]"
           >
             <div className="flex items-start justify-between gap-2">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F0F0F0] text-[#666666]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200/80 bg-gradient-to-b from-white to-slate-50 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                 <Icon />
               </div>
-              <span className="shrink-0 rounded-full bg-[#EEEEEE] px-2.5 py-1 text-[11px] font-semibold tabular-nums text-[#444444]">
+              <span className="shrink-0 rounded-full border border-slate-200/80 bg-slate-50/90 px-2 py-0.5 text-[10px] font-semibold tabular-nums tracking-tight text-slate-700">
                 {row.delta}
               </span>
             </div>
-            <h3 className="mt-4 text-[10px] font-bold uppercase leading-tight tracking-[0.12em] text-[#888888]">
+            <h3 className="mt-3 text-[9px] font-bold uppercase leading-tight tracking-[0.14em] text-slate-500">
               {row.label}
             </h3>
-            <p className="mt-1.5 text-[26px] font-bold leading-none tracking-tight text-black">
+            <p className="mt-1 text-[1.375rem] font-bold leading-none tracking-[-0.02em] text-slate-900">
               {row.value}
             </p>
-            <p className="mt-auto pt-3 text-[10px] leading-snug text-[#888888]">{footer}</p>
+            <p className="mt-auto pt-2.5 text-[9px] leading-relaxed text-slate-400">{footer}</p>
           </article>
         );
       })}
