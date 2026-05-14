@@ -47,8 +47,8 @@ export function GlobalControls() {
   }
 
   return (
-    <div className="dash-card-lg p-6 sm:p-8">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="dash-card-lg p-5 sm:p-7">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
           Filters & controls
         </p>
@@ -67,13 +67,13 @@ export function GlobalControls() {
         </button>
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-12 lg:items-start">
+      <div className="grid gap-8 lg:grid-cols-2 lg:gap-10 lg:items-start">
         <section className="min-w-0 space-y-4">
           <h3 className="text-sm font-bold text-slate-900">Date range</h3>
           <DateRangeControl layout="stacked" />
         </section>
 
-        <section className="min-w-0 space-y-8">
+        <section className="min-w-0 space-y-6">
           <div className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <h3 className="text-sm font-bold leading-snug text-slate-900">

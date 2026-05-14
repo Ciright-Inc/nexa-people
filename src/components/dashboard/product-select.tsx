@@ -31,7 +31,7 @@ export function ProductSelect() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={clsx(
-          "flex min-w-[240px] items-center justify-between gap-3 rounded-xl border border-slate-900/10 bg-white px-3 py-2 text-left text-sm text-slate-800 shadow-sm transition hover:border-primary/25",
+          "flex min-w-[240px] items-center justify-between gap-3 rounded-xl border border-slate-900/10 bg-white/90 px-3 py-2 text-left text-sm text-slate-800 shadow-sm backdrop-blur-sm transition-all duration-nexa ease-nexa-out hover:border-primary/25 hover:shadow-md",
           open && "border-primary/40 ring-2 ring-primary/25"
         )}
         aria-expanded={open}
@@ -62,14 +62,14 @@ export function ProductSelect() {
             aria-label="Close product menu"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 z-40 mt-2 w-[min(100vw-2rem,520px)] overflow-hidden rounded-2xl border border-slate-900/10 bg-white shadow-glass">
-            <div className="border-b border-slate-900/10 p-3 relative">
+          <div className="absolute right-0 z-40 mt-2 flex w-max min-w-[240px] max-w-[min(100vw-2rem,22rem)] flex-col overflow-hidden rounded-2xl border border-slate-900/10 bg-white shadow-glass">
+            <div className="relative border-b border-slate-900/10 p-3">
               <input
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search products…"
-                className="w-full rounded-xl border border-slate-900/10 bg-white px-10 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/15"
+                className="w-full min-w-[240px] rounded-xl border border-slate-900/10 bg-white px-10 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/15"
               />
               <div className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-slate-400">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -89,17 +89,17 @@ export function ProductSelect() {
             </div>
             <ul
               role="listbox"
-              className="max-h-72 overflow-auto p-2"
+              className="max-h-72 w-full min-w-0 overflow-auto p-2"
               tabIndex={-1}
             >
               {filtered.map((p) => (
-                <li key={p.id}>
+                <li key={p.id} className="w-full">
                   <button
                     type="button"
                     role="option"
                     aria-selected={p.id === current?.id}
                     className={clsx(
-                      "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-800 transition hover:bg-slate-900/[0.04]",
+                      "flex w-full min-w-0 items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-800 transition hover:bg-slate-900/[0.04]",
                       p.id === current?.id &&
                         "bg-primary text-white hover:bg-primary-muted"
                     )}
@@ -109,7 +109,7 @@ export function ProductSelect() {
                       setQuery("");
                     }}
                   >
-                    <span className="truncate">{p.name}</span>
+                    <span className="min-w-0 flex-1 truncate">{p.name}</span>
                     {p.id === current?.id ? (
                       <span className="shrink-0 text-white/90" aria-hidden>
                         <svg width="18" height="18" viewBox="0 0 20 20" fill="none">

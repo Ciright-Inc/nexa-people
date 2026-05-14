@@ -84,20 +84,20 @@ export function DashboardActiveFiltersBar() {
   if (chips.length === 0) return null;
 
   return (
-    <div className="relative z-[20] border-b border-slate-200/80 bg-gradient-to-b from-slate-100/95 to-slate-100/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-3 lg:px-10">
+    <div className="nexa-active-filters-slab relative z-[20]">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-4 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-2.5 lg:px-8">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           {chips.map((c) => (
             <div
               key={c.key}
-              className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200/90 bg-white pl-3 pr-1 py-1 text-[13px] font-medium text-slate-800 shadow-sm"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200/90 bg-white/90 pl-3 pr-1 py-1 text-[13px] font-medium text-slate-800 shadow-sm transition-shadow duration-nexa ease-nexa-out hover:border-slate-300/90 hover:shadow-md"
             >
               <span className="min-w-0 truncate">{c.label}</span>
               <button
                 type="button"
                 aria-label={c.removeLabel}
                 onClick={c.onRemove}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white transition hover:bg-slate-800"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white transition-all duration-nexa ease-nexa-out hover:bg-slate-800 hover:shadow-sm active:scale-95"
               >
                 <svg
                   width="18"
@@ -120,7 +120,7 @@ export function DashboardActiveFiltersBar() {
         <button
           type="button"
           onClick={resetAnalyticsFilters}
-          className="shrink-0 self-start rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 sm:self-auto"
+          className="shrink-0 self-start rounded-full border border-slate-200/95 bg-white/90 px-5 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-nexa ease-nexa-out hover:border-slate-300 hover:bg-white hover:text-slate-950 hover:shadow-md active:scale-[0.98] sm:self-auto"
         >
           Clear filters
         </button>

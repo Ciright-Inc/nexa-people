@@ -79,13 +79,13 @@ export function KpiGrid() {
   const footer = `Modelled KPI for the filtered window (${windowName}).`;
 
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-2.5 xl:grid-cols-4">
       {rows.map((row, i) => {
         const Icon = icons[i] ?? icons[0];
         return (
           <article
             key={row.label}
-            className="flex flex-col rounded-xl border border-slate-200/90 bg-white px-3.5 pb-3 pt-3 shadow-premium ring-1 ring-slate-900/[0.03]"
+            className="flex flex-col rounded-xl border border-slate-200/80 bg-white/85 px-3 pb-2.5 pt-2.5 shadow-premium ring-1 ring-slate-900/[0.03] backdrop-blur-sm transition-all duration-nexa-slow ease-nexa-out hover:-translate-y-px hover:border-slate-200 hover:shadow-nexaFloat"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200/80 bg-gradient-to-b from-white to-slate-50 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
@@ -95,13 +95,13 @@ export function KpiGrid() {
                 {row.delta}
               </span>
             </div>
-            <h3 className="mt-3 text-[9px] font-bold uppercase leading-tight tracking-[0.14em] text-slate-500">
+            <h3 className="mt-2.5 text-[9px] font-bold uppercase leading-tight tracking-[0.14em] text-slate-500">
               {row.label}
             </h3>
             <p className="mt-1 text-[1.375rem] font-bold leading-none tracking-[-0.02em] text-slate-900">
               {row.value}
             </p>
-            <p className="mt-auto pt-2.5 text-[9px] leading-relaxed text-slate-400">{footer}</p>
+            <p className="mt-auto pt-2 text-[9px] leading-relaxed text-slate-400">{footer}</p>
           </article>
         );
       })}

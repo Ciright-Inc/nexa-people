@@ -24,11 +24,11 @@ export function DateRangeControl({ layout = "inline" }: DateRangeControlProps) {
   return (
     <div
       className={clsx(
-        "flex flex-col gap-4",
-        !stacked && "sm:flex-row sm:items-start sm:gap-4"
+        "flex flex-col gap-3",
+        !stacked && "sm:flex-row sm:items-start sm:gap-3"
       )}
     >
-      <div className={clsx("flex min-w-0 flex-col gap-3", !stacked && "sm:flex-1")}>
+      <div className={clsx("flex min-w-0 flex-col gap-2.5", !stacked && "sm:flex-1")}>
         <div className="flex flex-wrap gap-2">
           {DATE_RANGE_PRESETS.map((p) => (
             <button
@@ -54,7 +54,7 @@ export function DateRangeControl({ layout = "inline" }: DateRangeControlProps) {
         <div
           className={clsx(
             "flex flex-wrap gap-3",
-            stacked && "grid w-full gap-4 sm:grid-cols-2"
+            stacked && "grid w-full gap-3 sm:grid-cols-2"
           )}
         >
           <div className="min-w-0 space-y-1.5">

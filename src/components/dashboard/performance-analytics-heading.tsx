@@ -30,7 +30,7 @@ export function PerformanceAnalyticsHeading() {
   const ingestLine = useMemo(() => lastIngestUtcLine(new Date()), []);
 
   return (
-    <div className="border-b border-slate-200 pb-8">
+    <div className="border-b border-slate-200 pb-6">
       <h2 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
         Performance analytics
       </h2>

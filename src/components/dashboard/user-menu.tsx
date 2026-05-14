@@ -42,16 +42,17 @@ export function UserMenu() {
             aria-label="Close account menu"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 z-40 mt-2 w-[min(92vw,320px)] overflow-hidden rounded-2xl border border-slate-900/10 bg-white shadow-glass">
-            <div className="px-4 py-3">
-              <p className="text-sm font-semibold text-slate-900">{user.name}</p>
-              <p className="mt-1 text-sm text-slate-500">{user.email}</p>
+          <div className="absolute right-0 z-40 mt-2 flex w-max max-w-[min(100vw-2rem,22rem)] flex-col items-stretch overflow-hidden rounded-2xl border border-slate-900/10 bg-white shadow-glass">
+            <div className="w-full min-w-0 px-4 py-3">
+              <p className="whitespace-nowrap text-sm font-semibold text-slate-900">{user.name}</p>
+              <p className="mt-1 whitespace-nowrap text-sm text-slate-500">{user.email}</p>
             </div>
-            <div className="border-t border-slate-900/10 p-2">
+            <div className="h-px w-full shrink-0 bg-slate-200/90" aria-hidden />
+            <div className="w-full min-w-0 p-2">
               <button
                 type="button"
                 onClick={signOut}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-900/[0.04]"
+                className="flex w-full min-w-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-900/[0.04]"
               >
                 <svg
                   width="18"

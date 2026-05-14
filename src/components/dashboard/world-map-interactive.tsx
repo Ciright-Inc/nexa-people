@@ -254,12 +254,12 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
 
   return (
     <div className="dash-card-lg relative overflow-hidden">
-      <div className="pointer-events-auto absolute left-3 top-3 z-[20] flex min-h-0 w-[min(100%-1.5rem,220px)] max-w-full flex-col gap-2.5 sm:left-4 sm:top-4">
-        <div className="shrink-0 rounded-lg border border-slate-200/90 bg-white p-2.5 text-xs shadow-premium backdrop-blur-sm">
+      <div className="pointer-events-auto absolute left-3 top-3 z-[20] flex min-h-0 w-[min(100%-1.5rem,220px)] max-w-full flex-col gap-2 sm:left-4 sm:top-4">
+        <div className="shrink-0 rounded-lg border border-slate-200/90 bg-white p-2 text-xs shadow-premium backdrop-blur-sm">
           <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
             Node status
           </p>
-          <div className="mt-2.5 space-y-2.5">
+          <div className="mt-2 space-y-2">
             <div>
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[11px] font-bold text-slate-700">
@@ -274,7 +274,7 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
                 centers.
               </p>
             </div>
-            <div className="flex items-baseline justify-between gap-2 border-t border-slate-100 pt-2.5">
+            <div className="flex items-baseline justify-between gap-2 border-t border-slate-100 pt-2">
               <span className="text-[11px] font-bold text-slate-700">Peak traffic</span>
               <span className="shrink-0 text-[11px] font-bold tabular-nums text-slate-800">
                 42.8 Tbps
@@ -288,11 +288,11 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
           </div>
         </div>
 
-        <div className="hidden min-h-0 max-w-full shrink-0 flex-col overflow-hidden rounded-lg border border-slate-200/90 bg-white p-2.5 text-xs shadow-premium backdrop-blur-sm md:flex">
+        <div className="hidden min-h-0 max-w-full shrink-0 flex-col overflow-hidden rounded-lg border border-slate-200/90 bg-white p-2 text-xs shadow-premium backdrop-blur-sm md:flex">
           <p className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
             Signals
           </p>
-          <ul className="mt-2.5 h-[5.25rem] min-h-0 shrink-0 touch-pan-y space-y-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pr-1 text-[11px] leading-snug text-slate-800 [scrollbar-gutter:stable]">
+          <ul className="mt-2 h-[5.25rem] min-h-0 shrink-0 touch-pan-y space-y-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pr-1 text-[11px] leading-snug text-slate-800 [scrollbar-gutter:stable]">
             {signalLines.map((line) => (
               <li key={line}>{line}</li>
             ))}
@@ -300,40 +300,40 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
         </div>
       </div>
 
-      <div className="relative aspect-[16/9] min-h-[min(360px,50vh)] w-full min-w-0 overflow-hidden bg-[#f4f5f7]">
+      <div className="relative aspect-video w-full min-w-0 overflow-hidden bg-[#f4f5f7] min-h-[min(280px,38svh)] max-h-[min(720px,70svh)] sm:min-h-[min(320px,44svh)] lg:min-h-[min(380px,50svh)]">
         <div
           ref={hostRef}
           className="world-map-host absolute inset-0 isolate z-0 h-full w-full [&_.leaflet-control-zoom]:hidden"
         />
 
-        <div className="pointer-events-auto absolute bottom-4 left-3 z-[20] flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-1 shadow-[0_4px_28px_rgba(15,23,42,0.1),0_1px_0_rgba(255,255,255,0.85)_inset] ring-1 ring-slate-900/[0.04] backdrop-blur-md sm:bottom-5 sm:left-4">
+        <div className="pointer-events-auto absolute bottom-3 left-3 z-[20] flex flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 p-0.5 shadow-[0_2px_16px_rgba(15,23,42,0.08),0_1px_0_rgba(255,255,255,0.85)_inset] ring-1 ring-slate-900/[0.04] backdrop-blur-md sm:bottom-4 sm:left-4">
           <button
             type="button"
             aria-label="Zoom in"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-primary/[0.08] hover:text-primary active:scale-[0.96]"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 transition hover:bg-primary/[0.08] hover:text-primary active:scale-[0.96]"
             onClick={zoomIn}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path
                 d="M12 5v14M5 12h14"
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="2.25"
                 strokeLinecap="round"
               />
             </svg>
           </button>
-          <div className="mx-2 my-0.5 h-px shrink-0 bg-slate-200/90" />
+          <div className="mx-1 my-px h-px shrink-0 bg-slate-200/90" />
           <button
             type="button"
             aria-label="Zoom out"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-primary/[0.08] hover:text-primary active:scale-[0.96]"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 transition hover:bg-primary/[0.08] hover:text-primary active:scale-[0.96]"
             onClick={zoomOut}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path
                 d="M5 12h14"
                 stroke="currentColor"
-                strokeWidth="2.5"
+                strokeWidth="2.25"
                 strokeLinecap="round"
               />
             </svg>
@@ -341,7 +341,7 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
         </div>
 
         <div className="pointer-events-none absolute bottom-3 right-3 z-[20] max-w-[min(100%-1.5rem,220px)] sm:right-4">
-          <div className="w-full max-w-[min(100%,200px)] rounded-lg border border-slate-200/90 bg-white/95 px-2.5 py-2 text-[9px] text-slate-600 shadow-premium backdrop-blur-sm">
+          <div className="w-full max-w-[min(100%,200px)] rounded-lg border border-slate-200/90 bg-white/95 px-2 py-1.5 text-[9px] text-slate-600 shadow-premium backdrop-blur-sm">
             <p className="font-semibold uppercase tracking-[0.12em] text-slate-500">Legend</p>
             <div className="mt-1.5 space-y-1.5">
               <span className="flex items-center gap-1.5">
@@ -365,7 +365,7 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-slate-100 px-3 py-1.5 sm:px-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-slate-100 px-3 py-1 sm:px-4">
         <p className="max-w-[min(100%,52rem)] text-[10px] leading-tight text-slate-500">
           Leaflet | ©{" "}
           <a

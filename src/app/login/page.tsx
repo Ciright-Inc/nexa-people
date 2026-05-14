@@ -93,10 +93,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-12">
-      <div className="glass-panel w-full max-w-md p-8">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 items-center justify-center">
+    <div className="nexa-login-canvas flex min-h-dvh flex-col items-center justify-center px-4 py-10">
+      <div className="glass-panel w-full max-w-md p-7">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 flex h-12 items-center justify-center">
             <AppLogo className="h-10 w-auto" title="Ciright" priority />
           </div>
           <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
@@ -108,28 +108,12 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-3">
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-900" htmlFor="email">
               Email Address <span className="text-rose-600">*</span>
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path
-                    d="M4 6.5C4 5.12 5.12 4 6.5 4h11C19.88 4 21 5.12 21 6.5v11c0 1.38-1.12 2.5-2.5 2.5h-11C5.12 20 4 18.88 4 17.5v-11Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <path
-                    d="M6.5 7.5 12 11.5l5.5-4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
               <input
                 id="email"
                 name="email"
@@ -146,13 +130,29 @@ export default function LoginPage() {
                 }}
                 aria-invalid={!!emailError}
                 aria-describedby={emailError ? "email-error" : undefined}
-                className={`w-full rounded-xl border bg-white px-11 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 ${
+                className={`relative z-0 w-full rounded-xl border bg-white/95 py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm backdrop-blur-sm transition-[border-color,box-shadow] duration-nexa ease-nexa-out placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
                   emailError
                     ? "border-rose-400 focus:border-rose-400 focus:ring-rose-200"
                     : "border-slate-900/10 focus:border-primary/30 focus:ring-primary/15"
                 }`}
                 placeholder="name@company.com"
               />
+              <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-primary/65">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0">
+                  <path
+                    d="M4 6.5C4 5.12 5.12 4 6.5 4h11C19.88 4 21 5.12 21 6.5v11c0 1.38-1.12 2.5-2.5 2.5h-11C5.12 20 4 18.88 4 17.5v-11Z"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                  />
+                  <path
+                    d="M6.5 7.5 12 11.5l5.5-4"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
             </div>
             {emailError ? (
               <p id="email-error" className="mt-2 text-xs font-medium text-rose-700">
@@ -180,21 +180,6 @@ export default function LoginPage() {
               </button>
             </div>
             <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path
-                    d="M7.5 10.2V8.7a4.5 4.5 0 1 1 9 0v1.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M7 10h10a2 2 0 0 1 2 2v6.5A2.5 2.5 0 0 1 16.5 21h-9A2.5 2.5 0 0 1 5 18.5V12a2 2 0 0 1 2-2Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                </svg>
-              </div>
               <input
                 id="password"
                 name="password"
@@ -211,17 +196,32 @@ export default function LoginPage() {
                 }}
                 aria-invalid={!!passwordError}
                 aria-describedby={passwordError ? "password-error" : undefined}
-                className={`w-full rounded-xl border bg-white px-11 py-3 pr-11 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 ${
+                className={`relative z-0 w-full rounded-xl border bg-white/95 py-3 pl-11 pr-12 text-sm text-slate-900 shadow-sm backdrop-blur-sm transition-[border-color,box-shadow] duration-nexa ease-nexa-out placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
                   passwordError
                     ? "border-rose-400 focus:border-rose-400 focus:ring-rose-200"
                     : "border-slate-900/10 focus:border-primary/30 focus:ring-primary/15"
                 }`}
                 placeholder="Enter password"
               />
+              <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-primary/65">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0">
+                  <path
+                    d="M7.5 10.2V8.7a4.5 4.5 0 1 1 9 0v1.5"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M7 10h10a2 2 0 0 1 2 2v6.5A2.5 2.5 0 0 1 16.5 21h-9A2.5 2.5 0 0 1 5 18.5V12a2 2 0 0 1 2-2Z"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                  />
+                </svg>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-3 flex items-center text-slate-500 hover:text-slate-800"
+                className="absolute inset-y-0 right-2 z-20 flex items-center rounded-lg px-1 text-slate-600 hover:bg-slate-900/[0.04] hover:text-slate-900"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -283,13 +283,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="hover-lift mt-2 w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:bg-primary-muted disabled:cursor-not-allowed disabled:opacity-60"
+            className="hover-lift mt-2 w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition-all duration-nexa ease-nexa-out hover:bg-primary-muted active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
           >
             {pending ? "Signing in…" : "Continue"}
           </button>
         </form>
 
-        <p className="mt-8 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-slate-500">
           ©{new Date().getFullYear()} Ciright. All Rights Reserved.
         </p>
       </div>
@@ -298,13 +298,13 @@ export default function LoginPage() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 cursor-default bg-slate-900/25 backdrop-blur-sm"
+            className="fixed inset-0 z-40 cursor-default bg-slate-950/20 backdrop-blur-[3px] transition-opacity duration-nexa"
             aria-label="Close reset password modal"
             onClick={() => setResetOpen(false)}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-900/10 bg-white/80 shadow-glass backdrop-blur-xl">
-              <div className="px-7 pb-7 pt-6">
+            <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-900/[0.08] bg-white/82 shadow-glass backdrop-blur-xl transition-shadow duration-nexa ease-nexa-out">
+              <div className="px-6 pb-6 pt-5">
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
                   Reset Your Password
                 </h2>
@@ -312,7 +312,7 @@ export default function LoginPage() {
                   Enter your email and we&apos;ll send you a link to reset your password.
                 </p>
 
-                <div className="mt-6">
+                <div className="mt-5">
                   <label className="mb-2 block text-sm font-semibold text-slate-900" htmlFor="reset-email">
                     Email Address <span className="text-rose-600">*</span>
                   </label>
@@ -354,7 +354,7 @@ export default function LoginPage() {
                   ) : null}
                 </div>
 
-                <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:justify-end">
                   <button
                     type="button"
                     onClick={() => setResetOpen(false)}

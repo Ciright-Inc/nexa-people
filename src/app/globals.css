@@ -6,51 +6,128 @@
   --primary: #003087;
   --primary-soft: rgba(0, 48, 135, 0.12);
   --primary-glow: rgba(0, 48, 135, 0.22);
-  --bg-deep: #f8fafc;
+  --bg-deep: #f4f5f7;
   --bg-elevated: #ffffff;
-  --border-soft: rgba(15, 23, 42, 0.10);
-  --text-primary: #0b1220;
-  --text-muted: rgba(15, 23, 42, 0.60);
+  --border-soft: rgba(15, 23, 42, 0.08);
+  --text-primary: #0a0f1a;
+  --text-muted: rgba(15, 23, 42, 0.58);
   --accent-positive: #34d399;
   --accent-warn: #fbbf24;
-  --glass: rgba(255, 255, 255, 0.70);
+  --glass: rgba(255, 255, 255, 0.72);
+  /** Neutral canvas (charcoal-tinted whites / greys). */
+  --canvas-0: #fcfcfd;
+  --canvas-1: #f6f7f9;
+  --canvas-2: #eceef2;
+  --ink-muted: rgba(15, 23, 42, 0.45);
+  --hairline: rgba(15, 23, 42, 0.06);
+  /** Status / live indicator (pairs with `linear-gradient(..., #22c55e 100%)`). */
+  --green: #4ade80;
+}
+
+/** Expanding circular ripple (border ring scales from center; stays round). */
+@keyframes nexa-ripple-ring {
+  0% {
+    transform: scale(0.42);
+    opacity: 0.78;
+  }
+  100% {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-nexa-ripple-ring {
+    animation: none;
+    opacity: 0.4;
+    transform: scale(1.55);
+  }
 }
 
 html {
   color-scheme: light;
 }
 
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  ::selection {
+    background-color: rgba(0, 48, 135, 0.14);
+    color: inherit;
+  }
+}
+
 body {
-  @apply min-h-dvh antialiased;
-  background:
-    radial-gradient(900px 480px at 50% -8%, rgba(15, 23, 42, 0.04), transparent 55%),
-    linear-gradient(180deg, #fafbfc 0%, #f1f3f5 100%);
+  @apply min-h-dvh antialiased text-[15px] font-sans;
   color: var(--text-primary);
+  background-color: var(--canvas-1);
+  background-image:
+    radial-gradient(1200px 520px at 50% -12%, rgba(255, 255, 255, 0.92), transparent 58%),
+    radial-gradient(900px 420px at 100% 0%, rgba(255, 255, 255, 0.35), transparent 45%),
+    radial-gradient(800px 380px at 0% 20%, rgba(15, 23, 42, 0.03), transparent 50%),
+    linear-gradient(180deg, var(--canvas-0) 0%, var(--canvas-1) 42%, var(--canvas-2) 100%);
+  background-attachment: fixed;
 }
 
 @layer utilities {
-  .glass-panel {
-    @apply rounded-2xl border border-slate-200/90 bg-white shadow-premium;
+  /** Scrollable region with no visible scrollbar (wheel / touch / keys still scroll). */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 
-  .dash-card {
-    @apply rounded-2xl border border-slate-200/90 bg-white shadow-premium;
+  /** Shimmer skeleton (use on block + optional inner bar). */
+  .nexa-skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: linear-gradient(
+      105deg,
+      rgba(15, 23, 42, 0.06) 0%,
+      rgba(15, 23, 42, 0.045) 40%,
+      rgba(15, 23, 42, 0.07) 100%
+    );
   }
 
-  .dash-card-lg {
-    @apply rounded-2xl border border-slate-200/90 bg-white shadow-premiumLg;
+  .nexa-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
+    animation: nexa-shimmer-slide 1.35s ease-in-out infinite;
   }
 
-  .glass-chip {
-    @apply rounded-full border border-slate-900/10 bg-white/70 px-3 py-1 text-xs text-slate-700 backdrop-blur-md;
+  @keyframes nexa-shimmer-slide {
+    100% {
+      transform: translateX(100%);
+    }
   }
 
-  .hover-lift {
-    @apply transition-transform duration-200 ease-out will-change-transform hover:-translate-y-0.5;
+  @media (prefers-reduced-motion: reduce) {
+    .nexa-skeleton::after {
+      animation: none;
+    }
   }
 
-  .focus-ring {
-    @apply outline-none ring-2 ring-primary/25 ring-offset-2 ring-offset-white;
+  .animate-nexa-ripple-ring {
+    animation: nexa-ripple-ring 1.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+    transform-origin: center;
+    will-change: transform, opacity;
   }
 }
 
@@ -111,7 +188,7 @@ input[type="range"].dash-range-primary::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--primary);
   border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(15, 23, 42, 0.04);
 }
 
 input[type="range"].dash-range-primary::-moz-range-track {
@@ -132,5 +209,100 @@ input[type="range"].dash-range-primary::-moz-range-thumb {
   border: 2px solid #fff;
   border-radius: 50%;
   background: var(--primary);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(15, 23, 42, 0.04);
+}
+
+@layer components {
+  /**
+   * Card / glass surfaces live in `components`, not `utilities`, so `@apply` can resolve
+   * core Tailwind utilities. Custom theme keys like `duration-nexa` are not reliably
+   * available inside `@layer utilities` @apply (JIT / layer ordering).
+   */
+  .glass-panel {
+    @apply rounded-2xl border backdrop-blur-xl transition-shadow duration-200 ease-out;
+    border-color: var(--hairline);
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 12px 40px -14px rgba(15, 23, 42, 0.1);
+  }
+
+  .dash-card {
+    @apply rounded-2xl border backdrop-blur-xl transition-all duration-300 ease-out;
+    border-color: var(--hairline);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 0 1px rgba(15, 23, 42, 0.04),
+      0 1px 2px rgba(15, 23, 42, 0.035),
+      0 10px 36px -12px rgba(15, 23, 42, 0.09);
+  }
+
+  .dash-card-lg {
+    @apply rounded-2xl border backdrop-blur-xl transition-all duration-300 ease-out;
+    border-color: rgba(15, 23, 42, 0.065);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.92),
+      0 0 0 1px rgba(15, 23, 42, 0.045),
+      0 1px 3px rgba(15, 23, 42, 0.04),
+      0 18px 56px -14px rgba(15, 23, 42, 0.1);
+  }
+
+  .glass-chip {
+    @apply rounded-full border px-3 py-1 text-xs text-slate-700 backdrop-blur-md transition-colors duration-200 ease-out;
+    border-color: rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  }
+
+  .hover-lift {
+    @apply transition-all duration-200 ease-out will-change-transform;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-0.5;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 0 1px rgba(15, 23, 42, 0.05),
+      0 6px 24px -6px rgba(15, 23, 42, 0.12);
+  }
+
+  .focus-ring {
+    @apply outline-none ring-2 ring-primary/20 ring-offset-2 ring-offset-[var(--canvas-0)] transition-shadow duration-200 ease-out;
+  }
+
+  .nexa-app-header {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 14px 44px -18px rgba(15, 23, 42, 0.1);
+  }
+
+  .nexa-active-filters-slab {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    background: linear-gradient(180deg, rgba(252, 252, 253, 0.97) 0%, rgba(236, 238, 242, 0.9) 100%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .nexa-footer-slab {
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .nexa-login-canvas {
+    background:
+      radial-gradient(900px 480px at 50% 0%, rgba(255, 255, 255, 0.55), transparent 55%),
+      radial-gradient(700px 400px at 100% 100%, rgba(15, 23, 42, 0.04), transparent 50%),
+      linear-gradient(180deg, var(--canvas-0) 0%, var(--canvas-1) 55%, var(--canvas-2) 100%);
+  }
 }

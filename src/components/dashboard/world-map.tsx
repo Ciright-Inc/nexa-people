@@ -16,7 +16,7 @@ const WorldMapInteractive = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="dash-card-lg flex aspect-[16/9] min-h-[300px] items-center justify-center bg-slate-100 text-sm text-slate-500">
+      <div className="dash-card-lg flex aspect-video min-h-[min(280px,38svh)] w-full max-w-full items-center justify-center bg-slate-100 text-sm text-slate-500 sm:min-h-[min(320px,44svh)] lg:min-h-[min(380px,50svh)]">
         Loading map…
       </div>
     ),
@@ -27,9 +27,9 @@ export function WorldMapScatter() {
   const { filters, setGeography } = useDashboardFilters();
 
   return (
-    <section className="space-y-5">
-      <div className="flex flex-col gap-8 pb-2 lg:flex-row lg:items-start lg:justify-between lg:gap-12 xl:gap-16">
-        <div className="min-w-0 flex-1 space-y-3 lg:max-w-2xl">
+    <section className="space-y-4">
+      <div className="flex flex-col gap-6 pb-1 lg:flex-row lg:items-start lg:justify-between lg:gap-10 xl:gap-12">
+        <div className="min-w-0 flex-1 space-y-2.5 lg:max-w-2xl">
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
             User geography
           </p>
@@ -59,7 +59,7 @@ export function WorldMapScatter() {
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-col items-end gap-6 text-right">
+        <div className="flex shrink-0 flex-col items-end gap-4 text-right">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
               Active markets
