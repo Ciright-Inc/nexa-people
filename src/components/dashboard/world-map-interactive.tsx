@@ -19,7 +19,7 @@ const PRIMARY = "#003087";
 
 /**
  * Marker fills — four clearly separate hues on a light map, still enterprise-friendly:
- * amber (low), emerald (mid), red (high), violet growth target.
+ * amber (low), emerald (mid), red (high), blue growth target (dashed).
  */
 const MAP_LOW = "#f59e0b";
 const MAP_MID = "#10b981";
@@ -27,8 +27,8 @@ const MAP_HIGH = "#dc2626";
 const MAP_LOW_STROKE = "#d97706";
 const MAP_MID_STROKE = "#047857";
 const MAP_HIGH_STROKE = "#991b1b";
-const GROWTH_FILL = "#ede9fe";
-const GROWTH_STROKE = "#7c3aed";
+const GROWTH_FILL = "#e6eeff";
+const GROWTH_STROKE = "#0000ff";
 
 /** Carto Positron (`light_all`): light raster basemap used with Leaflet; attribution OSM + CARTO. */
 const TILE_URL =
