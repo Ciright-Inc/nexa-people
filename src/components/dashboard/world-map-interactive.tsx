@@ -17,15 +17,18 @@ import type { DashboardFiltersState, EngagementBand, MapPoint } from "@/lib/type
 /** Brand primary — selected nodes and high-engagement peak. */
 const PRIMARY = "#003087";
 
-/** Marker fills: slate (low) → blue (mid) → navy (high); growth uses indigo so it reads apart from engagement. */
-const MAP_LOW = "#64748b";
-const MAP_MID = "#2563eb";
-const MAP_HIGH = "#003087";
-const MAP_LOW_STROKE = "#475569";
-const MAP_MID_STROKE = "#1e40af";
-const MAP_HIGH_STROKE = "#001f5c";
-const GROWTH_FILL = "#e0e7ff";
-const GROWTH_STROKE = "#4338ca";
+/**
+ * Marker fills — four clearly separate hues on a light map, still enterprise-friendly:
+ * amber (low), emerald (mid), red (high), violet growth target.
+ */
+const MAP_LOW = "#f59e0b";
+const MAP_MID = "#10b981";
+const MAP_HIGH = "#dc2626";
+const MAP_LOW_STROKE = "#d97706";
+const MAP_MID_STROKE = "#047857";
+const MAP_HIGH_STROKE = "#991b1b";
+const GROWTH_FILL = "#ede9fe";
+const GROWTH_STROKE = "#7c3aed";
 
 /** Carto Positron (`light_all`): light raster basemap used with Leaflet; attribution OSM + CARTO. */
 const TILE_URL =
