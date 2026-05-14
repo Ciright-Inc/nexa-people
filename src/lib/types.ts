@@ -41,6 +41,16 @@ export type Product = {
   slug: string;
 };
 
+/** Tracked site for “My Personal Sites” (mock list). */
+export type PersonalSite = {
+  id: string;
+  host: string;
+  /** Synthetic visitors in last 24h for display. */
+  visitors24h: number;
+  /** Percent change vs prior window (display only; mini chart is derived from this). */
+  deltaPct: number;
+};
+
 export type DashboardFiltersState = {
   productId: string;
   datePreset: DateRangePreset;

@@ -8,7 +8,7 @@ export function AddSiteFlow() {
   return (
     <DashboardFiltersProvider>
       <div className="flex min-h-dvh flex-col">
-        <div className="sticky top-0 z-[1000] shadow-nexaHeader">
+        <div className="sticky top-0 z-[1000] bg-[var(--canvas-0)]">
           <DashboardHeader />
         </div>
         <AddSiteWizard />

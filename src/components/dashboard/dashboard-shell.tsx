@@ -11,7 +11,7 @@ import { PerformanceAnalyticsHeading } from "./performance-analytics-heading";
 export function DashboardShell() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <div className="sticky top-0 z-[1000] shadow-nexaHeader">
+      <div className="sticky top-0 z-[1000] bg-[var(--canvas-0)]">
         <DashboardHeader />
         <DashboardActiveFiltersBar />
       </div>

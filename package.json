@@ -11,6 +11,10 @@
     "check": "tsc --noEmit && next build"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-regular-svg-icons": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.3.1",
     "clsx": "^2.1.1",
     "d3-scale": "^4.0.2",
     "date-fns": "^4.1.0",

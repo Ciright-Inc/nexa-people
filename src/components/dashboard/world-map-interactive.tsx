@@ -9,15 +9,23 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import L from "leaflet";
-import { scaleSqrt } from "d3-scale";
 import "leaflet/dist/leaflet.css";
 
 import { MAP_POINTS, PRODUCTS } from "@/lib/mock-data";
-import type { DashboardFiltersState, EngagementBand } from "@/lib/types";
+import type { DashboardFiltersState, EngagementBand, MapPoint } from "@/lib/types";
 
+/** Brand primary — selected nodes and high-engagement peak. */
 const PRIMARY = "#003087";
-const PRIMARY_MUTED = "#1e4a9e";
-const PRIMARY_LIGHT = "#94b4e8";
+
+/** Marker fills: slate (low) → blue (mid) → navy (high); growth uses indigo so it reads apart from engagement. */
+const MAP_LOW = "#64748b";
+const MAP_MID = "#2563eb";
+const MAP_HIGH = "#003087";
+const MAP_LOW_STROKE = "#475569";
+const MAP_MID_STROKE = "#1e40af";
+const MAP_HIGH_STROKE = "#001f5c";
+const GROWTH_FILL = "#e0e7ff";
+const GROWTH_STROKE = "#4338ca";
 
 /** Carto Positron (`light_all`): light raster basemap used with Leaflet; attribution OSM + CARTO. */
 const TILE_URL =
@@ -25,12 +33,57 @@ const TILE_URL =
 
 function engagementFill(b: EngagementBand, selected: boolean) {
   if (selected) return PRIMARY;
-  if (b === "high") return PRIMARY_MUTED;
-  if (b === "med") return "#5b7ab8";
-  return PRIMARY_LIGHT;
+  if (b === "high") return MAP_HIGH;
+  if (b === "med") return MAP_MID;
+  return MAP_LOW;
 }
 
-const GROWTH_TARGET_IDS = new Set<string>(["syd", "sgp"]);
+function circleStyleForPoint(pt: MapPoint, geoId: string | null): L.PathOptions {
+  const selected = geoId === pt.id;
+  const growth = GROWTH_TARGET_IDS.has(pt.id);
+  if (growth) {
+    return {
+      fillColor: GROWTH_FILL,
+      fillOpacity: 0.62,
+      color: GROWTH_STROKE,
+      weight: 2,
+      opacity: 0.95,
+      dashArray: "5 4",
+    };
+  }
+  const fill = engagementFill(pt.engagement, selected);
+  const stroke = selected
+    ? PRIMARY
+    : pt.engagement === "high"
+      ? MAP_HIGH_STROKE
+      : pt.engagement === "med"
+        ? MAP_MID_STROKE
+        : MAP_LOW_STROKE;
+  return {
+    fillColor: fill,
+    fillOpacity: selected ? 0.55 : 0.42,
+    color: stroke,
+    weight: selected ? 3 : 1.5,
+    opacity: 0.9,
+  };
+}
+
+const GROWTH_TARGET_IDS = new Set<string>(["sgp"]);
+
+/** Leaflet circleMarker radius (px), 2× base: low → mid → high; growth matches mid tier. */
+function markerRadius(engagement: EngagementBand, growth: boolean): number {
+  if (growth) return 12;
+  switch (engagement) {
+    case "low":
+      return 8;
+    case "med":
+      return 12;
+    case "high":
+      return 18;
+    default:
+      return 12;
+  }
+}
 
 type Props = {
   filters: DashboardFiltersState;
@@ -47,15 +100,6 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
   filtersRef.current = filters;
   setGeographyRef.current = setGeography;
 
-  const size = useMemo(
-    () =>
-      scaleSqrt()
-        .domain([0, Math.max(...MAP_POINTS.map((p) => p.activeUsers), 1)])
-        .range([10, 34]),
-    []
-  );
-
-
   const footprint = MAP_POINTS.length;
 
   const productName = useMemo(
@@ -66,11 +110,16 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
     [filters.productId]
   );
 
-  const signalLines = useMemo(
+  const signalEntries = useMemo(
     () => [
-      "New York: steady throughput (70.0%).",
-      "Mumbai: steady throughput (78.0%).",
-      `${productName}: routing healthy (all regions).`,
+      ...MAP_POINTS.map((p, i) => ({
+        id: p.id,
+        text: `${p.name}: steady throughput (${(62 + (i * 5) % 28).toFixed(1)}%).`,
+      })),
+      {
+        id: "product-routing",
+        text: `${productName}: routing healthy (all regions).`,
+      },
     ],
     [productName]
   );
@@ -98,17 +147,7 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
     for (const pt of MAP_POINTS) {
       const m = markersRef.current[pt.id];
       if (!m) continue;
-      const selected = geoId === pt.id;
-      const growth = GROWTH_TARGET_IDS.has(pt.id);
-      const fill = engagementFill(pt.engagement, selected);
-      m.setStyle({
-        fillColor: fill,
-        fillOpacity: growth ? 0.14 : selected ? 0.55 : 0.42,
-        color: PRIMARY,
-        weight: growth ? 2 : selected ? 3 : 1.5,
-        opacity: growth ? 0.95 : 0.9,
-        dashArray: growth ? "5 4" : undefined,
-      });
+      m.setStyle(circleStyleForPoint(pt, geoId));
     }
   }, []);
 
@@ -152,19 +191,13 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
     const geoId = filtersRef.current.geographyId;
 
     for (const pt of MAP_POINTS) {
-      const selected = geoId === pt.id;
-      const r = size(pt.activeUsers);
       const growth = GROWTH_TARGET_IDS.has(pt.id);
-      const fill = engagementFill(pt.engagement, selected);
+      const r = markerRadius(pt.engagement, growth);
+      const style = circleStyleForPoint(pt, geoId);
 
       const cm = L.circleMarker([pt.lat, pt.lng], {
         radius: r,
-        fillColor: fill,
-        fillOpacity: growth ? 0.14 : selected ? 0.55 : 0.42,
-        color: PRIMARY,
-        weight: growth ? 2 : selected ? 3 : 1.5,
-        opacity: growth ? 0.95 : 0.9,
-        dashArray: growth ? "5 4" : undefined,
+        ...style,
       });
 
       cm.bindTooltip(
@@ -244,7 +277,7 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
       map.remove();
       mapRef.current = null;
     };
-    // Map + markers: single mount; `size` is stable (derived from static MAP_POINTS).
+    // Map + markers: single mount; radii are stable (derived from static MAP_POINTS).
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-once
   }, []);
 
@@ -292,9 +325,12 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
           <p className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
             Signals
           </p>
-          <ul className="mt-2 h-[5.25rem] min-h-0 shrink-0 touch-pan-y space-y-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pr-1 text-[11px] leading-snug text-slate-800 [scrollbar-gutter:stable]">
-            {signalLines.map((line) => (
-              <li key={line}>{line}</li>
+          <ul
+            className="mt-2 max-h-[calc(5*1.375rem+4*0.25rem)] min-h-0 touch-pan-y space-y-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pr-1 text-[11px] leading-snug text-slate-800 [scrollbar-gutter:stable]"
+            aria-label="Regional signals"
+          >
+            {signalEntries.map((row) => (
+              <li key={row.id}>{row.text}</li>
             ))}
           </ul>
         </div>
@@ -343,19 +379,35 @@ export function WorldMapInteractive({ filters, setGeography }: Props) {
         <div className="pointer-events-none absolute bottom-3 right-3 z-[20] max-w-[min(100%-1.5rem,220px)] sm:right-4">
           <div className="w-full max-w-[min(100%,200px)] rounded-lg border border-slate-200/90 bg-white/95 px-2 py-1.5 text-[9px] text-slate-600 shadow-premium backdrop-blur-sm">
             <p className="font-semibold uppercase tracking-[0.12em] text-slate-500">Legend</p>
-            <div className="mt-1.5 space-y-1.5">
+            <div className="mt-1.5 space-y-1">
               <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c7d8f4]" /> Low engagement
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#5b7ab8]" /> Mid engagement
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#1e4a9e]" /> High engagement
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: MAP_LOW }}
+                  aria-hidden
+                />
+                Low engagement
               </span>
               <span className="flex items-center gap-1.5">
                 <span
-                  className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-slate-400 bg-slate-100/80"
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: MAP_MID }}
+                  aria-hidden
+                />
+                Mid engagement
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span
+                  className="h-[10px] w-[10px] shrink-0 rounded-full"
+                  style={{ backgroundColor: MAP_HIGH }}
+                  aria-hidden
+                />
+                High engagement
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span
+                  className="box-border h-[10px] w-[10px] shrink-0 rounded-full border-2 border-dashed"
+                  style={{ backgroundColor: GROWTH_FILL, borderColor: GROWTH_STROKE }}
                   aria-hidden
                 />
                 Growth target (dashed outline)

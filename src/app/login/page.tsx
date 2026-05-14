@@ -283,9 +283,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="hover-lift mt-2 w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition-all duration-nexa ease-nexa-out hover:bg-primary-muted active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+            className="hover-lift mt-2 w-full rounded-md bg-primary p-2 text-sm font-semibold text-primary-foreground shadow-card transition-all duration-nexa ease-nexa-out hover:bg-primary-muted active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
           >
-            {pending ? "Signing in…" : "Continue"}
+            {pending ? "Signing in…" : "Sign In"}
           </button>
         </form>
 

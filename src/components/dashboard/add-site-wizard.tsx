@@ -5,6 +5,7 @@ import Link from "next/link";
 import { clsx } from "clsx";
 
 import { TimezoneCombobox } from "./timezone-combobox";
+import { buildPersonalSiteInstallSnippet } from "@/lib/site-snippet";
 import { DEFAULT_TIMEZONE_ID, getTimezoneOptions } from "@/lib/timezones";
 
 const STEPS = [
@@ -31,11 +32,7 @@ export function AddSiteWizard() {
     return d || "example.com";
   }, [domain]);
 
-  const snippet = useMemo(
-    () =>
-      `<script defer data-domain="${safeDomain}" src="https://analytics.ciright.com/js/script.js"></script>`,
-    [safeDomain]
-  );
+  const snippet = useMemo(() => buildPersonalSiteInstallSnippet(safeDomain), [safeDomain]);
 
   async function copySnippet() {
     try {
@@ -165,7 +162,7 @@ export function AddSiteWizard() {
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.06),0_4px_14px_rgba(0,48,135,0.28)] transition hover:bg-primary-muted"
+              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted"
             >
               Continue
             </button>
@@ -194,7 +191,7 @@ export function AddSiteWizard() {
             <button
               type="button"
               onClick={() => setStep(3)}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.06),0_4px_14px_rgba(0,48,135,0.28)] transition hover:bg-primary-muted"
+              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted"
             >
               Start collecting data
             </button>

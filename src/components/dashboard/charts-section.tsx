@@ -191,7 +191,7 @@ export function ChartsSection() {
             <div className="border-t border-slate-100 p-3.5 sm:px-4 sm:py-3.5">
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.06),0_4px_14px_rgba(0,48,135,0.28)] transition hover:bg-primary-muted hover:shadow-[0_2px_4px_rgba(15,23,42,0.08),0_6px_20px_rgba(0,48,135,0.32)]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted hover:shadow-md"
               >
                 View full network report
                 <span aria-hidden className="text-base leading-none">

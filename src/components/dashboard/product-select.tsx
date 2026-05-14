@@ -36,10 +36,10 @@ export function ProductSelect() {
         )}
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-label={`Product: ${current?.name ?? "Select product"}`}
       >
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="shrink-0 text-slate-500">Product:</span>
-          <span className="truncate font-semibold text-slate-900">{current?.name ?? "Product"}</span>
+        <span className="min-w-0 truncate font-semibold text-slate-900">
+          {current?.name ?? "Product"}
         </span>
         <span className="text-slate-500" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
