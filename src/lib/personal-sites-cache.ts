@@ -17,12 +17,6 @@ export function setCachedPersonalSites(payload: PersonalSitesApiPayload) {
   cacheAt = Date.now();
 }
 
-export function invalidatePersonalSitesCache() {
-  cache = null;
-  cacheAt = 0;
-  inflight = null;
-}
-
 export function getPersonalSitesInflight() {
   return inflight;
 }

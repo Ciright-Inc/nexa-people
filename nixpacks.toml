@@ -1,3 +1,0 @@
-# Railway / Railpack: clean npm cache before ci to avoid EINTEGRITY from stale/corrupt tarballs.
-[phases.install]
-cmds = ["npm cache clean --force", "npm ci"]

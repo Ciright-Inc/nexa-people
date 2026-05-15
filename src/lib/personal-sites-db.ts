@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 
+import { warnIfUsingLocalFileStorage } from "@/lib/personal-sites-backend";
 import { normalizeSiteHostInput } from "@/lib/normalize-site-host";
 import {
   readStateFromFile,
@@ -43,6 +44,7 @@ function toPersonalSites(state: PersistedState): PersonalSite[] {
 }
 
 export async function listPersonalSitesFromDb(): Promise<PersonalSitesResponse> {
+  warnIfUsingLocalFileStorage();
   const state = await readState();
   const sites = sortPersonalSitesPinnedFirst(toPersonalSites(state), state.pinnedIds);
   return { sites, pinnedIds: state.pinnedIds };

@@ -4,13 +4,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { clsx } from "clsx";
 
-import type { PersonalSite } from "@/lib/types";
-import { getCachedPersonalSites } from "@/lib/personal-sites-cache";
-import { fetchPersonalSites } from "@/lib/personal-sites-fetch";
-import { PERSONAL_SITES_LIST_CHANGED_EVENT } from "@/lib/personal-sites-storage";
+import { usePersonalSites } from "@/hooks/use-personal-sites";
 import type { SelectedSitePayload } from "@/lib/selected-site";
 import {
-  clearSelectedSiteIfNotInList,
   persistSelectedSiteForDashboard,
   readSelectedSiteFromSession,
   SELECTED_SITE_CHANGED_EVENT,
@@ -19,70 +15,42 @@ import {
 export function PersonalSiteSelect() {
   const router = useRouter();
   const pathname = usePathname();
+  const { sites } = usePersonalSites();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [tick, setTick] = useState(0);
   /** null until after mount — avoids hydration mismatch (sessionStorage missing on server). */
   const [sessionSite, setSessionSite] = useState<SelectedSitePayload | null>(null);
 
-  const bump = useCallback(() => setTick((t) => t + 1), []);
-
-  useEffect(() => {
+  const syncSession = useCallback(() => {
     setSessionSite(readSelectedSiteFromSession());
-  }, [tick]);
+  }, []);
 
   useEffect(() => {
-    const bumpTick = () => bump();
-    window.addEventListener("storage", bumpTick);
-    window.addEventListener(SELECTED_SITE_CHANGED_EVENT, bumpTick);
-    window.addEventListener(PERSONAL_SITES_LIST_CHANGED_EVENT, bumpTick);
-    return () => {
-      window.removeEventListener("storage", bumpTick);
-      window.removeEventListener(SELECTED_SITE_CHANGED_EVENT, bumpTick);
-      window.removeEventListener(PERSONAL_SITES_LIST_CHANGED_EVENT, bumpTick);
-    };
-  }, [bump]);
-
-  const [sortedSites, setSortedSites] = useState<PersonalSite[]>(() => getCachedPersonalSites()?.sites ?? []);
+    syncSession();
+    window.addEventListener(SELECTED_SITE_CHANGED_EVENT, syncSession);
+    return () => window.removeEventListener(SELECTED_SITE_CHANGED_EVENT, syncSession);
+  }, [syncSession]);
 
   useEffect(() => {
-    clearSelectedSiteIfNotInList(sortedSites);
-    setSessionSite(readSelectedSiteFromSession());
-  }, [sortedSites]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetchPersonalSites()
-      .then((d) => {
-        if (cancelled) return;
-        clearSelectedSiteIfNotInList(d.sites);
-        setSortedSites(d.sites);
-        setSessionSite(readSelectedSiteFromSession());
-      })
-      .catch(() => {
-        if (!cancelled) setSortedSites((prev) => (prev.length > 0 ? prev : []));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [tick]);
+    syncSession();
+  }, [sites, syncSession]);
 
   const current = useMemo(() => {
     if (!sessionSite) return null;
-    return sortedSites.find((s) => s.id === sessionSite.id) ?? null;
-  }, [sessionSite, sortedSites]);
+    return sites.find((s) => s.id === sessionSite.id) ?? null;
+  }, [sessionSite, sites]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return sortedSites;
-    return sortedSites.filter((s) => s.host.toLowerCase().includes(q));
-  }, [query, sortedSites]);
+    if (!q) return sites;
+    return sites.filter((s) => s.host.toLowerCase().includes(q));
+  }, [query, sites]);
 
   const label = useMemo(() => {
     if (current) return current.host;
-    if (sortedSites.length === 0) return "No sites";
+    if (sites.length === 0) return "No sites";
     return "Select site";
-  }, [current, sortedSites.length]);
+  }, [current, sites.length]);
 
   const ariaLabel = useMemo(() => `Site: ${label}`, [label]);
 
@@ -90,10 +58,7 @@ export function PersonalSiteSelect() {
     <div className="relative">
       <button
         type="button"
-        onClick={() => {
-          bump();
-          setOpen((v) => !v);
-        }}
+        onClick={() => setOpen((v) => !v)}
         className={clsx(
           "flex min-w-[240px] items-center justify-between gap-3 rounded-xl border border-slate-900/10 bg-white/90 px-3 py-2 text-left text-sm text-slate-800 shadow-sm backdrop-blur-sm transition-all duration-nexa ease-nexa-out hover:border-primary/25 hover:shadow-md",
           open && "border-primary/40 ring-2 ring-primary/25"
@@ -166,7 +131,7 @@ export function PersonalSiteSelect() {
                         persistSelectedSiteForDashboard({ id: s.id, host: s.host });
                         setOpen(false);
                         setQuery("");
-                        bump();
+                        syncSession();
 
                         if (pathname !== "/dashboard") {
                           router.push("/dashboard");
@@ -192,7 +157,11 @@ export function PersonalSiteSelect() {
                 );
               })}
               {!filtered.length ? (
-                <li className="px-3 py-2 text-sm text-slate-500">No sites match. Add sites under My Personal Sites.</li>
+                <li className="px-3 py-2 text-sm text-slate-500">
+                  {sites.length === 0
+                    ? "No sites yet. Add sites under My Personal Sites."
+                    : "No sites match your search."}
+                </li>
               ) : null}
             </ul>
           </div>

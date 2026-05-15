@@ -11,13 +11,9 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import type { PersonalSite } from "@/lib/types";
 import { buildSparkFromDelta } from "@/lib/personal-site-spark";
 import { buildPersonalSiteInstallSnippet } from "@/lib/site-snippet";
+import { usePersonalSites } from "@/hooks/use-personal-sites";
 import { persistSelectedSiteForDashboard } from "@/lib/selected-site";
-import { getCachedPersonalSites } from "@/lib/personal-sites-cache";
-import {
-  deletePersonalSiteApi,
-  fetchPersonalSites,
-  setPinnedSitesApi,
-} from "@/lib/personal-sites-fetch";
+import { deletePersonalSiteApi, setPinnedSitesApi } from "@/lib/personal-sites-fetch";
 function MiniSpark({ values, flat }: { values: number[]; flat?: boolean }) {
   const gid = useId().replace(/:/g, "");
   const w = 220;
@@ -273,32 +269,20 @@ function SiteCard({
 export function PersonalSitesClient() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const initialCache = getCachedPersonalSites();
-  const [activeSites, setActiveSites] = useState<PersonalSite[]>(() => initialCache?.sites ?? []);
-  const [pinned, setPinned] = useState<string[]>(() => initialCache?.pinnedIds ?? []);
-  const [listLoading, setListLoading] = useState(() => !initialCache);
-  const [listError, setListError] = useState<string | null>(null);
+  const {
+    sites: activeSites,
+    pinnedIds: pinned,
+    loading: listLoading,
+    error: listError,
+    refresh: refreshList,
+    setFromMutation,
+  } = usePersonalSites();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [copyFlashId, setCopyFlashId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PersonalSite | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
-
-  const refreshList = useCallback(async () => {
-    try {
-      const data = await fetchPersonalSites();
-      setActiveSites(data.sites);
-      setPinned(data.pinnedIds);
-      setListError(null);
-    } catch (e) {
-      setListError(e instanceof Error ? e.message : "Failed to load sites");
-    } finally {
-      setListLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refreshList();
-  }, [refreshList]);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const displayError = actionError ?? listError;
 
   const togglePinned = useCallback(
     async (id: string) => {
@@ -307,16 +291,15 @@ export function PersonalSitesClient() {
       setActionBusy(true);
       try {
         const data = await setPinnedSitesApi(next);
-        setActiveSites(data.sites);
-        setPinned(data.pinnedIds);
-        setListError(null);
+        setFromMutation(data);
+        setActionError(null);
       } catch (e) {
-        setListError(e instanceof Error ? e.message : "Could not update pin");
+        setActionError(e instanceof Error ? e.message : "Could not update pin");
       } finally {
         setActionBusy(false);
       }
     },
-    [pinned, actionBusy]
+    [pinned, actionBusy, setFromMutation]
   );
 
   const copyScript = useCallback(async (site: PersonalSite) => {
@@ -342,18 +325,17 @@ export function PersonalSitesClient() {
     setActionBusy(true);
     try {
       const data = await deletePersonalSiteApi(id);
-      setActiveSites(data.sites);
-      setPinned(data.pinnedIds);
-      setListError(null);
+      setFromMutation(data);
+      setActionError(null);
       setCopyFlashId((cur) => (cur === id ? null : cur));
       setOpenMenuId(null);
       setDeleteTarget(null);
     } catch (e) {
-      setListError(e instanceof Error ? e.message : "Could not delete site");
+      setActionError(e instanceof Error ? e.message : "Could not delete site");
     } finally {
       setActionBusy(false);
     }
-  }, [deleteTarget, actionBusy]);
+  }, [deleteTarget, actionBusy, setFromMutation]);
 
   const openAnalyticsForSite = useCallback(
     (site: PersonalSite) => {
@@ -403,14 +385,14 @@ export function PersonalSitesClient() {
           </div>
         </div>
 
-        {listError ? (
+        {displayError ? (
           <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
-            {listError}
+            {displayError}
             <button
               type="button"
               onClick={() => {
-                setListLoading(true);
-                void refreshList();
+                setActionError(null);
+                void refreshList(false);
               }}
               className="ml-3 font-semibold underline underline-offset-2"
             >

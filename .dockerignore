@@ -24,6 +24,5 @@ coverage
 # persisted local data (use DATABASE_URL in production)
 data
 
-# docs / alternate deploy configs
+# docs
 README.md
-nixpacks.toml

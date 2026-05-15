@@ -2,7 +2,6 @@ import type { PersonalSite } from "@/lib/types";
 import {
   getCachedPersonalSites,
   getPersonalSitesInflight,
-  invalidatePersonalSitesCache,
   setCachedPersonalSites,
   setPersonalSitesInflight,
 } from "@/lib/personal-sites-cache";
@@ -26,6 +25,7 @@ async function fetchPersonalSitesNetwork(): Promise<PersonalSitesApiPayload> {
   if (!res.ok) throw new Error(`Failed to load sites (${res.status})`);
   const payload = await parseJson(res);
   setCachedPersonalSites(payload);
+  notifyPersonalSitesListChanged();
   return payload;
 }
 
@@ -94,8 +94,4 @@ export async function setPinnedSitesApi(pinnedIds: string[]): Promise<PersonalSi
   setCachedPersonalSites(payload);
   notifyPersonalSitesListChanged();
   return payload;
-}
-
-export function invalidatePersonalSites() {
-  invalidatePersonalSitesCache();
 }
