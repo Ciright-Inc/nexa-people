@@ -34,6 +34,13 @@ if (!url) {
   console.error("DATABASE_URL is not set. Copy .env.local.example → .env.local and paste your Railway URL.");
   process.exit(1);
 }
+if (/YOUR_PASSWORD|REPLACE_ME|CHANGEME|<password>/i.test(url)) {
+  console.error(
+    "DATABASE_URL still has a placeholder (e.g. YOUR_PASSWORD).\n" +
+      "Paste the full string from Railway → PostgreSQL → Connect into .env.local."
+  );
+  process.exit(1);
+}
 
 const ssl = /localhost|127\.0\.0\.1/i.test(url)
   ? false

@@ -20,9 +20,20 @@ async function parseJson(res: Response): Promise<PersonalSitesApiPayload> {
   return { sites: o.sites as PersonalSite[], pinnedIds: o.pinnedIds.filter((x): x is string => typeof x === "string") };
 }
 
+type ApiErrorBody = { error?: string; hint?: string };
+
+async function throwApiError(res: Response, fallback: string): Promise<never> {
+  const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
+  const detail = body?.error?.trim();
+  const hint = body?.hint?.trim();
+  const parts = [detail || fallback];
+  if (hint) parts.push(hint);
+  throw new Error(parts.join(" "));
+}
+
 async function fetchPersonalSitesNetwork(): Promise<PersonalSitesApiPayload> {
   const res = await fetch("/api/personal-sites", { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to load sites (${res.status})`);
+  if (!res.ok) await throwApiError(res, `Failed to load sites (${res.status})`);
   const payload = await parseJson(res);
   setCachedPersonalSites(payload);
   notifyPersonalSitesListChanged();

@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 
+import { formatDatabaseError, requireDatabaseUrl } from "@/lib/database-url";
 import {
   emptyState,
   readStateFromFile,
@@ -11,10 +12,14 @@ const STATE_ROW_ID = 1;
 let pool: Pool | null = null;
 let schemaReady: Promise<void> | null = null;
 
+function resetPool(): void {
+  void pool?.end().catch(() => undefined);
+  pool = null;
+  schemaReady = null;
+}
+
 function connectionString(): string {
-  const url = process.env.DATABASE_URL?.trim();
-  if (!url) throw new Error("DATABASE_URL is not set");
-  return url;
+  return requireDatabaseUrl();
 }
 
 function resolvePgSsl(): boolean | { rejectUnauthorized: boolean } {
@@ -36,7 +41,13 @@ function getPool(): Pool {
 }
 
 async function initSchema(): Promise<void> {
-  const client = await getPool().connect();
+  let client;
+  try {
+    client = await getPool().connect();
+  } catch (err) {
+    resetPool();
+    throw new Error(formatDatabaseError(err));
+  }
   try {
     await client.query(`
       CREATE TABLE IF NOT EXISTS personal_sites_state (
@@ -103,21 +114,33 @@ async function migrateFromFileIfEmpty(state: PersistedState): Promise<PersistedS
 }
 
 export async function readStateFromPg(): Promise<PersistedState> {
-  await ensureSchema();
-  const { rows } = await getPool().query<{ payload: unknown }>(
-    `SELECT payload FROM personal_sites_state WHERE id = $1`,
-    [STATE_ROW_ID]
-  );
-  const state = parsePayload(rows[0]?.payload);
-  return migrateFromFileIfEmpty(state);
+  try {
+    await ensureSchema();
+    const { rows } = await getPool().query<{ payload: unknown }>(
+      `SELECT payload FROM personal_sites_state WHERE id = $1`,
+      [STATE_ROW_ID]
+    );
+    const state = parsePayload(rows[0]?.payload);
+    return migrateFromFileIfEmpty(state);
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("DATABASE_URL")) throw err;
+    resetPool();
+    throw new Error(formatDatabaseError(err));
+  }
 }
 
 export async function writeStateToPg(state: PersistedState): Promise<void> {
-  await ensureSchema();
-  await getPool().query(
-    `INSERT INTO personal_sites_state (id, payload, updated_at)
-     VALUES ($1, $2::jsonb, NOW())
-     ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()`,
-    [STATE_ROW_ID, JSON.stringify(state)]
-  );
+  try {
+    await ensureSchema();
+    await getPool().query(
+      `INSERT INTO personal_sites_state (id, payload, updated_at)
+       VALUES ($1, $2::jsonb, NOW())
+       ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()`,
+      [STATE_ROW_ID, JSON.stringify(state)]
+    );
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("DATABASE_URL")) throw err;
+    resetPool();
+    throw new Error(formatDatabaseError(err));
+  }
 }

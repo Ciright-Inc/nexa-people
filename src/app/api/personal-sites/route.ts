@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getPersonalSitesStorage } from "@/lib/personal-sites-backend";
+import { formatDatabaseError } from "@/lib/database-url";
 import { isValidAnalyticsHost, normalizeSiteHostInput } from "@/lib/normalize-site-host";
 import {
   addSiteToDb,
@@ -17,12 +17,8 @@ export async function GET() {
     return NextResponse.json(await listPersonalSitesFromDb());
   } catch (err) {
     console.error("[personal-sites] GET failed:", err);
-    const message = err instanceof Error ? err.message : "Failed to load sites";
-    const hint =
-      process.env.NODE_ENV === "development" && getPersonalSitesStorage() === "postgresql"
-        ? "Check DATABASE_URL in .env.local matches Railway Postgres (run npm run db:check)."
-        : undefined;
-    return NextResponse.json({ error: message, hint }, { status: 500 });
+    const message = formatDatabaseError(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -80,6 +76,6 @@ export async function POST(request: Request) {
     return NextResponse.json(await listPersonalSitesFromDb());
   } catch (err) {
     console.error("[personal-sites] POST failed:", err);
-    return NextResponse.json({ error: "Site operation failed" }, { status: 500 });
+    return NextResponse.json({ error: formatDatabaseError(err) }, { status: 500 });
   }
 }
