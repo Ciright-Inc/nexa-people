@@ -32,6 +32,14 @@ npm2.txt
 npm-install.log
 build-log.txt
 
+# local dev / shell captures (repo root)
+/dev-server.log
+/err.txt
+/nextout.txt
+/out.txt
+/stderr.txt
+/stdout.txt
+
 # env files
 .env*.local
 
