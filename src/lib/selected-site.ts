@@ -40,3 +40,22 @@ export function readSelectedSiteFromSession(): SelectedSitePayload | null {
   }
   return null;
 }
+
+export function clearSelectedSiteFromDashboard() {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(SELECTED_SITE_STORAGE_KEY);
+    window.dispatchEvent(new Event(SELECTED_SITE_CHANGED_EVENT));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Drop session selection when it is not in the current API site list (e.g. removed mock/seed sites). */
+export function clearSelectedSiteIfNotInList(sites: ReadonlyArray<{ id: string }>) {
+  const stored = readSelectedSiteFromSession();
+  if (!stored) return;
+  if (sites.length === 0 || !sites.some((s) => s.id === stored.id)) {
+    clearSelectedSiteFromDashboard();
+  }
+}

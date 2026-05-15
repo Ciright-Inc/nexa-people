@@ -9,7 +9,12 @@ import { getCachedPersonalSites } from "@/lib/personal-sites-cache";
 import { fetchPersonalSites } from "@/lib/personal-sites-fetch";
 import { PERSONAL_SITES_LIST_CHANGED_EVENT } from "@/lib/personal-sites-storage";
 import type { SelectedSitePayload } from "@/lib/selected-site";
-import { persistSelectedSiteForDashboard, readSelectedSiteFromSession, SELECTED_SITE_CHANGED_EVENT } from "@/lib/selected-site";
+import {
+  clearSelectedSiteIfNotInList,
+  persistSelectedSiteForDashboard,
+  readSelectedSiteFromSession,
+  SELECTED_SITE_CHANGED_EVENT,
+} from "@/lib/selected-site";
 
 export function PersonalSiteSelect() {
   const router = useRouter();
@@ -41,10 +46,18 @@ export function PersonalSiteSelect() {
   const [sortedSites, setSortedSites] = useState<PersonalSite[]>(() => getCachedPersonalSites()?.sites ?? []);
 
   useEffect(() => {
+    clearSelectedSiteIfNotInList(sortedSites);
+    setSessionSite(readSelectedSiteFromSession());
+  }, [sortedSites]);
+
+  useEffect(() => {
     let cancelled = false;
     void fetchPersonalSites()
       .then((d) => {
-        if (!cancelled) setSortedSites(d.sites);
+        if (cancelled) return;
+        clearSelectedSiteIfNotInList(d.sites);
+        setSortedSites(d.sites);
+        setSessionSite(readSelectedSiteFromSession());
       })
       .catch(() => {
         if (!cancelled) setSortedSites((prev) => (prev.length > 0 ? prev : []));
@@ -67,10 +80,9 @@ export function PersonalSiteSelect() {
 
   const label = useMemo(() => {
     if (current) return current.host;
-    if (sessionSite) return sessionSite.host;
     if (sortedSites.length === 0) return "No sites";
     return "Select site";
-  }, [current, sessionSite, sortedSites.length]);
+  }, [current, sortedSites.length]);
 
   const ariaLabel = useMemo(() => `Site: ${label}`, [label]);
 
@@ -139,7 +151,7 @@ export function PersonalSiteSelect() {
             </div>
             <ul role="listbox" className="max-h-72 w-full min-w-0 overflow-auto p-2" tabIndex={-1}>
               {filtered.map((s) => {
-                const selected = sessionSite?.id === s.id;
+                const selected = current?.id === s.id;
                 return (
                   <li key={s.id} className="w-full">
                     <button
