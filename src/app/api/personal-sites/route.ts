@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    return NextResponse.json(listPersonalSitesFromDb());
+    return NextResponse.json(await listPersonalSitesFromDb());
   } catch (err) {
     console.error("[personal-sites] GET failed:", err);
     return NextResponse.json({ error: "Failed to load sites" }, { status: 500 });
@@ -48,8 +48,8 @@ export async function POST(request: Request) {
       if (!isValidAnalyticsHost(normalized)) {
         return NextResponse.json({ error: "Invalid domain" }, { status: 400 });
       }
-      addSiteToDb(normalized, tzRaw);
-      return NextResponse.json(listPersonalSitesFromDb());
+      await addSiteToDb(normalized, tzRaw);
+      return NextResponse.json(await listPersonalSitesFromDb());
     }
 
     if (action === "delete") {
@@ -58,11 +58,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "id is required" }, { status: 400 });
       }
       const id = idRaw.trim();
-      const deleted = deleteSiteFromDb(id);
+      const deleted = await deleteSiteFromDb(id);
       if (!deleted) {
         return NextResponse.json({ error: "Site not found" }, { status: 404 });
       }
-      return NextResponse.json(listPersonalSitesFromDb());
+      return NextResponse.json(await listPersonalSitesFromDb());
     }
 
     const pinnedRaw = (body as { pinnedIds?: unknown }).pinnedIds;
@@ -70,8 +70,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "pinnedIds must be an array of strings" }, { status: 400 });
     }
 
-    setPinnedSiteIdsInDb(pinnedRaw);
-    return NextResponse.json(listPersonalSitesFromDb());
+    await setPinnedSiteIdsInDb(pinnedRaw);
+    return NextResponse.json(await listPersonalSitesFromDb());
   } catch (err) {
     console.error("[personal-sites] POST failed:", err);
     return NextResponse.json({ error: "Site operation failed" }, { status: 500 });
