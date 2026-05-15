@@ -1,0 +1,29 @@
+# dependencies & build output
+node_modules
+.next
+out
+build
+
+# git & IDE
+.git
+.gitignore
+.vscode
+.cursor
+
+# local env & secrets (set vars in Railway dashboard)
+.env
+.env.*
+!.env.example
+
+# logs & dev artifacts
+*.log
+npm-debug.log*
+coverage
+.DS_Store
+
+# persisted local data (use DATABASE_URL in production)
+data
+
+# docs / alternate deploy configs
+README.md
+nixpacks.toml
