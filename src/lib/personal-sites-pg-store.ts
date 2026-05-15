@@ -17,7 +17,7 @@ function connectionString(): string {
   return url;
 }
 
-function useSsl(): boolean | { rejectUnauthorized: boolean } {
+function resolvePgSsl(): boolean | { rejectUnauthorized: boolean } {
   const url = connectionString();
   if (/localhost|127\.0\.0\.1/i.test(url)) return false;
   if (process.env.PGSSLMODE === "disable") return false;
@@ -28,7 +28,7 @@ function getPool(): Pool {
   if (!pool) {
     pool = new Pool({
       connectionString: connectionString(),
-      ssl: useSsl(),
+      ssl: resolvePgSsl(),
       max: 5,
     });
   }
