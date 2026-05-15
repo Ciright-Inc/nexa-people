@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faTrashCan } from "@fortawesome/free-regular-svg-icons";
@@ -11,43 +12,28 @@ import { MOCK_PERSONAL_SITES } from "@/lib/mock-data";
 import type { PersonalSite } from "@/lib/types";
 import { buildSparkFromDelta } from "@/lib/personal-site-spark";
 import { buildPersonalSiteInstallSnippet } from "@/lib/site-snippet";
-
-const PINNED_STORAGE_KEY = "nexa-personal-sites-pinned";
-const DELETED_STORAGE_KEY = "nexa-personal-sites-deleted";
-
-function loadDeleted(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(DELETED_STORAGE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
-}
+import { persistSelectedSiteForDashboard } from "@/lib/selected-site";
+import {
+  DELETED_STORAGE_KEY,
+  PINNED_STORAGE_KEY,
+  loadDeletedIds,
+  loadPinnedIds,
+  notifyPersonalSitesListChanged,
+} from "@/lib/personal-sites-storage";
 
 function saveDeleted(ids: string[]) {
   try {
     localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(ids));
+    notifyPersonalSitesListChanged();
   } catch {
     /* ignore */
-  }
-}
-
-function loadPinned(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(PINNED_STORAGE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
-  } catch {
-    return [];
   }
 }
 
 function savePinned(ids: string[]) {
   try {
     localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(ids));
+    notifyPersonalSitesListChanged();
   } catch {
     /* ignore */
   }
@@ -136,6 +122,7 @@ function SiteCard({
   onCopyScript,
   copyFlash,
   onRequestDelete,
+  onOpenDashboard,
 }: {
   site: PersonalSite;
   pinned: boolean;
@@ -146,6 +133,7 @@ function SiteCard({
   onCopyScript: () => void;
   copyFlash: boolean;
   onRequestDelete: () => void;
+  onOpenDashboard?: (site: PersonalSite) => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -167,7 +155,13 @@ function SiteCard({
   const sparkValues = buildSparkFromDelta(site.deltaPct, site.visitors24h);
 
   return (
-    <article className="relative flex flex-col rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-premium ring-1 ring-slate-900/[0.03] backdrop-blur-sm transition-all duration-nexa-slow ease-nexa-out hover:-translate-y-px hover:border-slate-200 hover:shadow-nexaFloat">
+    <article
+      onClick={() => onOpenDashboard?.(site)}
+      aria-label={onOpenDashboard ? `Open analytics dashboard for ${site.host}` : undefined}
+      className={`relative flex flex-col rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-premium ring-1 ring-slate-900/[0.03] backdrop-blur-sm transition-all duration-nexa-slow ease-nexa-out hover:-translate-y-px hover:border-slate-200 hover:shadow-nexaFloat ${
+        onOpenDashboard ? "cursor-pointer" : ""
+      }`}
+    >
       <div className="flex items-center gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-slate-200/80 bg-gradient-to-b from-white to-slate-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
           <span className="text-sm font-bold leading-none text-primary">
@@ -191,7 +185,11 @@ function SiteCard({
             ) : null}
           </div>
         </div>
-        <div className="relative shrink-0">
+        <div
+          className="relative shrink-0"
+          data-site-card-actions
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             ref={btnRef}
             type="button"
@@ -294,6 +292,7 @@ function SiteCard({
 }
 
 export function PersonalSitesClient() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [pinned, setPinned] = useState<string[]>([]);
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
@@ -302,8 +301,8 @@ export function PersonalSitesClient() {
   const [deleteTarget, setDeleteTarget] = useState<PersonalSite | null>(null);
 
   useEffect(() => {
-    setPinned(loadPinned());
-    setDeletedIds(loadDeleted());
+    setPinned(loadPinnedIds());
+    setDeletedIds(loadDeletedIds());
   }, []);
 
   const togglePinned = useCallback((id: string) => {
@@ -362,6 +361,15 @@ export function PersonalSitesClient() {
     setOpenMenuId(null);
     setDeleteTarget(null);
   }, [deleteTarget]);
+
+  const openAnalyticsForSite = useCallback(
+    (site: PersonalSite) => {
+      persistSelectedSiteForDashboard({ id: site.id, host: site.host });
+      setOpenMenuId(null);
+      router.push("/dashboard");
+    },
+    [router]
+  );
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -432,6 +440,7 @@ export function PersonalSitesClient() {
               onCopyScript={() => void copyScript(site)}
               copyFlash={copyFlashId === site.id}
               onRequestDelete={() => setDeleteTarget(site)}
+              onOpenDashboard={openAnalyticsForSite}
             />
           ))}
         </div>

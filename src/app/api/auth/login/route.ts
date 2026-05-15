@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 
+import {
+  authenticateWithCiright,
+  isCirightLiveAuthEnabled,
+} from "@/lib/ciright-auth";
+
 const SESSION_COOKIE = "nexa_session";
 
 export async function POST(request: Request) {
@@ -20,8 +25,25 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!isCirightLiveAuthEnabled()) {
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set(SESSION_COOKIE, "1", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 12,
+    });
+    return res;
+  }
+
+  const auth = await authenticateWithCiright(email, password);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
+  }
+
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(SESSION_COOKIE, "1", {
+  res.cookies.set(SESSION_COOKIE, auth.sessionValue, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

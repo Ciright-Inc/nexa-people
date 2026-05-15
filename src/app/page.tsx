@@ -9,5 +9,5 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
-  redirect(token ? "/dashboard" : "/login");
+  redirect(token ? "/dashboard/sites" : "/login");
 }

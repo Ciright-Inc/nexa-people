@@ -85,43 +85,296 @@ body {
     height: 0;
   }
 
-  /** Shimmer skeleton (use on block + optional inner bar). */
+  /**
+   * Premium skeleton blocks — soft white / cool gray / sky tint, glass depth,
+   * moving shimmer (GPU: transform only on the wave layer).
+   */
   .nexa-skeleton {
     position: relative;
     overflow: hidden;
     border-radius: 0.75rem;
     background: linear-gradient(
-      105deg,
-      rgba(15, 23, 42, 0.06) 0%,
-      rgba(15, 23, 42, 0.045) 40%,
-      rgba(15, 23, 42, 0.07) 100%
+      118deg,
+      rgba(252, 253, 255, 0.98) 0%,
+      rgba(241, 245, 249, 0.88) 42%,
+      rgba(224, 242, 254, 0.42) 100%
     );
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  }
+
+  .nexa-skeleton::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0.035;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E");
   }
 
   .nexa-skeleton::after {
     content: "";
     position: absolute;
     inset: 0;
-    transform: translateX(-100%);
+    transform: translate3d(-100%, 0, 0);
+    background: linear-gradient(
+      105deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.06) 38%,
+      rgba(255, 255, 255, 0.72) 50%,
+      rgba(255, 255, 255, 0.06) 62%,
+      transparent 100%
+    );
+    animation: nexa-skel-shimmer-wave 1.65s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    will-change: transform;
+  }
+
+  .nexa-skel--shimmer-slow::after {
+    animation-duration: 2.5s;
+    animation-delay: 0.08s;
+  }
+
+  .nexa-skel--shimmer-fast::after {
+    animation-duration: 1.05s;
+  }
+
+  .nexa-skel--shimmer-delay-2::after {
+    animation-delay: 0.35s;
+  }
+
+  .nexa-skel--shimmer-delay-3::after {
+    animation-delay: 0.62s;
+  }
+
+  /** Subtle “alive” opacity — use on hero metrics / map chrome only. */
+  .nexa-skel--breathe {
+    animation: nexa-skel-breathe 2.85s ease-in-out infinite;
+    will-change: opacity;
+  }
+
+  @keyframes nexa-skel-shimmer-wave {
+    0% {
+      transform: translate3d(-100%, 0, 0) skewX(-10deg);
+    }
+    100% {
+      transform: translate3d(100%, 0, 0) skewX(-10deg);
+    }
+  }
+
+  @keyframes nexa-skel-breathe {
+    0%,
+    100% {
+      opacity: 0.86;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes nexa-skel-fade-up {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 8px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .nexa-skel-stagger > * {
+    animation: nexa-skel-fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .nexa-skel-stagger > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .nexa-skel-stagger > *:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+  .nexa-skel-stagger > *:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  .nexa-skel-stagger > *:nth-child(4) {
+    animation-delay: 0.18s;
+  }
+  .nexa-skel-stagger > *:nth-child(5) {
+    animation-delay: 0.24s;
+  }
+  .nexa-skel-stagger > *:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+  .nexa-skel-stagger > *:nth-child(7) {
+    animation-delay: 0.36s;
+  }
+  .nexa-skel-stagger > *:nth-child(8) {
+    animation-delay: 0.42s;
+  }
+
+  @keyframes nexa-map-scan {
+    0% {
+      transform: translate3d(-35%, 0, 0) rotate(11deg);
+      opacity: 0;
+    }
+    12% {
+      opacity: 0.45;
+    }
+    88% {
+      opacity: 0.4;
+    }
+    100% {
+      transform: translate3d(135%, 0, 0) rotate(11deg);
+      opacity: 0;
+    }
+  }
+
+  .nexa-map-scan-sweep {
+    position: absolute;
+    inset: -12% -8%;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+  }
+
+  .nexa-map-scan-sweep::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 38%;
+    left: 0;
     background: linear-gradient(
       90deg,
       transparent,
       rgba(255, 255, 255, 0.55),
+      rgba(191, 219, 254, 0.35),
       transparent
     );
-    animation: nexa-shimmer-slide 1.35s ease-in-out infinite;
+    filter: blur(10px);
+    animation: nexa-map-scan 3.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+    will-change: transform, opacity;
   }
 
-  @keyframes nexa-shimmer-slide {
-    100% {
-      transform: translateX(100%);
+  @keyframes nexa-skel-chart-line {
+    0% {
+      stroke-dashoffset: 120;
+      opacity: 0.35;
     }
+    50% {
+      opacity: 0.85;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      opacity: 0.55;
+    }
+  }
+
+  .nexa-skel-chart-path {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: nexa-skel-chart-line 2.2s ease-in-out infinite alternate;
+  }
+
+  @keyframes nexa-skel-pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(0, 48, 135, 0.18);
+      opacity: 0.55;
+    }
+    50% {
+      box-shadow: 0 0 24px 6px rgba(0, 48, 135, 0.12);
+      opacity: 1;
+    }
+  }
+
+  .nexa-skel-node-pulse {
+    animation: nexa-skel-pulse-glow 2.1s ease-in-out infinite;
+    will-change: box-shadow, opacity;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .nexa-skeleton::after {
-      animation: none;
+    .nexa-skeleton::after,
+    .nexa-skel--breathe,
+    .nexa-map-scan-sweep::after,
+    .nexa-skel-chart-path,
+    .nexa-skel-node-pulse {
+      animation: none !important;
     }
+    .nexa-skel-stagger > * {
+      animation: none !important;
+      opacity: 1;
+      transform: none;
+    }
+    .nexa-skel-chart-path {
+      stroke-dashoffset: 48;
+      opacity: 0.5;
+    }
+    .nexa-login-error-banner {
+      animation: none !important;
+      opacity: 1;
+      transform: none;
+    }
+    .nexa-login-success-toast {
+      animation: none !important;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes nexa-login-error-reveal {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, -10px, 0) scale(0.985);
+    }
+    16% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    26% {
+      transform: translate3d(-5px, 0, 0);
+    }
+    38% {
+      transform: translate3d(5px, 0, 0);
+    }
+    50% {
+      transform: translate3d(-4px, 0, 0);
+    }
+    62% {
+      transform: translate3d(4px, 0, 0);
+    }
+    74% {
+      transform: translate3d(-2px, 0, 0);
+    }
+    86%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .nexa-login-error-banner {
+    animation: nexa-login-error-reveal 0.88s cubic-bezier(0.34, 1.15, 0.64, 1) both;
+    transform-origin: center top;
+    will-change: transform, opacity;
+  }
+
+  @keyframes nexa-login-success-toast-in {
+    from {
+      opacity: 0;
+      transform: translate3d(12px, -6px, 0) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  .nexa-login-success-toast {
+    animation: nexa-login-success-toast-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-origin: top right;
+    will-change: transform, opacity;
   }
 
   .animate-nexa-ripple-ring {

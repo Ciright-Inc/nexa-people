@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AppLogo } from "@/components/brand/app-logo";
+import { LOGIN_SUCCESS_TOAST_STORAGE_KEY } from "@/components/dashboard/login-success-toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [authErrorBannerKey, setAuthErrorBannerKey] = useState(0);
   const [pending, setPending] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
@@ -20,6 +22,7 @@ export default function LoginPage() {
   const [resetSent, setResetSent] = useState(false);
   const [resetPending, setResetPending] = useState(false);
   const [resetServerError, setResetServerError] = useState<string | null>(null);
+  const [resetErrorBannerKey, setResetErrorBannerKey] = useState(0);
 
   function validate(): boolean {
     const e = email.trim();
@@ -50,12 +53,19 @@ export default function LoginPage() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(typeof data.error === "string" ? data.error : "Sign-in failed.");
+        setAuthErrorBannerKey((k) => k + 1);
         return;
       }
-      router.push("/dashboard");
+      try {
+        sessionStorage.setItem(LOGIN_SUCCESS_TOAST_STORAGE_KEY, "1");
+      } catch {
+        /* ignore */
+      }
+      router.push("/dashboard/sites");
       router.refresh();
     } catch {
       setError("Network error. Try again.");
+      setAuthErrorBannerKey((k) => k + 1);
     } finally {
       setPending(false);
     }
@@ -82,11 +92,13 @@ export default function LoginPage() {
         setResetServerError(
           typeof data.error === "string" ? data.error : "Failed to send reset link."
         );
+        setResetErrorBannerKey((k) => k + 1);
         return;
       }
       setResetSent(true);
     } catch {
       setResetServerError("Network error. Try again.");
+      setResetErrorBannerKey((k) => k + 1);
     } finally {
       setResetPending(false);
     }
@@ -124,6 +136,7 @@ export default function LoginPage() {
                 onChange={(e) => {
                   setEmail(e.target.value);
                   if (emailError) setEmailError(null);
+                  if (error) setError(null);
                 }}
                 onBlur={() => {
                   if (!email.trim()) setEmailError("Email is required.");
@@ -190,6 +203,7 @@ export default function LoginPage() {
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (passwordError) setPasswordError(null);
+                  if (error) setError(null);
                 }}
                 onBlur={() => {
                   if (!password) setPasswordError("Password is required.");
@@ -275,9 +289,28 @@ export default function LoginPage() {
           </div>
 
           {error ? (
-            <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-              {error}
-            </p>
+            <div
+              key={authErrorBannerKey}
+              role="alert"
+              className="nexa-login-error-banner flex items-center gap-2.5 rounded-lg border border-red-800/40 bg-red-600 px-3 py-1.5 text-sm font-semibold leading-tight text-white shadow-[0_8px_24px_rgba(185,28,28,0.38),inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-white/20"
+            >
+              <span
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white ring-1 ring-white/35"
+                aria-hidden
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
+                  <path
+                    d="M12 8v5"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="12" cy="16.5" r="0.9" fill="currentColor" />
+                </svg>
+              </span>
+              <p className="min-w-0 flex-1 tracking-tight text-white">{error}</p>
+            </div>
           ) : null}
 
           <button
@@ -348,9 +381,30 @@ export default function LoginPage() {
                     </p>
                   ) : null}
                   {resetServerError ? (
-                    <p className="mt-3 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-800">
-                      {resetServerError}
-                    </p>
+                    <div
+                      key={resetErrorBannerKey}
+                      role="alert"
+                      className="nexa-login-error-banner mt-3 flex items-center gap-2.5 rounded-lg border border-red-800/40 bg-red-600 px-3 py-1.5 text-sm font-semibold leading-tight text-white shadow-[0_8px_24px_rgba(185,28,28,0.38),inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-white/20"
+                    >
+                      <span
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white ring-1 ring-white/35"
+                        aria-hidden
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
+                          <path
+                            d="M12 8v5"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="round"
+                          />
+                          <circle cx="12" cy="16.5" r="0.9" fill="currentColor" />
+                        </svg>
+                      </span>
+                      <p className="min-w-0 flex-1 tracking-tight text-white">
+                        {resetServerError}
+                      </p>
+                    </div>
                   ) : null}
                 </div>
 

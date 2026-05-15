@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { MapModuleSkeleton } from "@/components/dashboard/map-module-skeleton";
 import type { DashboardFiltersState } from "@/lib/types";
 import { MAP_POINTS } from "@/lib/mock-data";
 import { dashboardDateFilterLabel } from "@/lib/date-range-display";
@@ -15,11 +16,7 @@ const WorldMapInteractive = dynamic(
     import("./world-map-interactive").then((m) => m.WorldMapInteractive),
   {
     ssr: false,
-    loading: () => (
-      <div className="dash-card-lg flex aspect-video min-h-[min(280px,38svh)] w-full max-w-full items-center justify-center bg-slate-100 text-sm text-slate-500 sm:min-h-[min(320px,44svh)] lg:min-h-[min(380px,50svh)]">
-        Loading map…
-      </div>
-    ),
+    loading: () => <MapModuleSkeleton />,
   }
 );
 
