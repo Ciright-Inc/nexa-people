@@ -61,8 +61,7 @@ export default function LoginPage() {
       } catch {
         /* ignore */
       }
-      router.push("/dashboard/sites");
-      router.refresh();
+      router.replace("/dashboard/sites");
     } catch {
       setError("Network error. Try again.");
       setAuthErrorBannerKey((k) => k + 1);

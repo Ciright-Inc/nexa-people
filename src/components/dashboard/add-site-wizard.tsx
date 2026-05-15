@@ -1,12 +1,15 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { clsx } from "clsx";
 
 import { TimezoneCombobox } from "./timezone-combobox";
+import { isValidAnalyticsHost, normalizeSiteHostInput } from "@/lib/normalize-site-host";
+import { addPersonalSiteApi } from "@/lib/personal-sites-fetch";
 import { buildPersonalSiteInstallSnippet } from "@/lib/site-snippet";
 import { DEFAULT_TIMEZONE_ID, getTimezoneOptions } from "@/lib/timezones";
+import { SiteAddedToast } from "./site-added-toast";
 
 const STEPS = [
   { id: 1, label: "Add site info" },
@@ -20,19 +23,27 @@ const STEP_DONE_FILL =
 export function AddSiteWizard() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [domain, setDomain] = useState("");
+  /** Host locked in when leaving step 1 (drives snippet + API + step 3 copy). */
+  const [confirmedHost, setConfirmedHost] = useState("");
   const [timezoneId, setTimezoneId] = useState(DEFAULT_TIMEZONE_ID);
   const timezoneOptions = useMemo(() => getTimezoneOptions(), []);
   const [copied, setCopied] = useState(false);
+  const [savingSite, setSavingSite] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [successToastHost, setSuccessToastHost] = useState<string | null>(null);
+  const dismissSuccessToast = useCallback(() => setSuccessToastHost(null), []);
   const tzFieldId = useId();
   const tzLabelId = `${tzFieldId}-label`;
 
-  const safeDomain = useMemo(() => {
-    let d = domain.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "");
-    d = d.split(/[/:?#]/)[0]?.trim() ?? "";
-    return d || "example.com";
-  }, [domain]);
+  const normalizedInput = useMemo(() => normalizeSiteHostInput(domain), [domain]);
+  const canContinueStep1 = isValidAnalyticsHost(normalizedInput);
 
-  const snippet = useMemo(() => buildPersonalSiteInstallSnippet(safeDomain), [safeDomain]);
+  const activeHost = step === 1 ? normalizedInput : confirmedHost;
+
+  const snippet = useMemo(
+    () => buildPersonalSiteInstallSnippet(activeHost || "example.com"),
+    [activeHost]
+  );
 
   async function copySnippet() {
     try {
@@ -45,10 +56,13 @@ export function AddSiteWizard() {
   }
 
   return (
+    <>
+      <SiteAddedToast host={successToastHost} onDismiss={dismissSuccessToast} />
     <main className="mx-auto w-full max-w-[720px] flex-1 px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
       <div className="mb-6">
         <Link
           href="/dashboard"
+          prefetch
           className="text-sm font-medium text-primary underline-offset-2 transition hover:underline"
         >
           ← Back to dashboard
@@ -161,8 +175,14 @@ export function AddSiteWizard() {
             </div>
             <button
               type="button"
-              onClick={() => setStep(2)}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted"
+              disabled={!canContinueStep1}
+              onClick={() => {
+                if (!canContinueStep1) return;
+                setConfirmedHost(normalizedInput);
+                setSaveError(null);
+                setStep(2);
+              }}
+              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continue
             </button>
@@ -188,12 +208,33 @@ export function AddSiteWizard() {
                 {copied ? "Copied" : "Copy"}
               </button>
             </div>
+            {saveError ? (
+              <p className="text-sm font-medium text-rose-700" role="alert">
+                {saveError}
+              </p>
+            ) : null}
             <button
               type="button"
-              onClick={() => setStep(3)}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted"
+              disabled={savingSite}
+              onClick={() => {
+                if (!confirmedHost || savingSite) return;
+                setSaveError(null);
+                setSavingSite(true);
+                void addPersonalSiteApi(confirmedHost, timezoneId)
+                  .then(() => {
+                    setSuccessToastHost(confirmedHost);
+                    setStep(3);
+                  })
+                  .catch((e: unknown) => {
+                    setSaveError(e instanceof Error ? e.message : "Could not save site");
+                  })
+                  .finally(() => {
+                    setSavingSite(false);
+                  });
+              }}
+              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-muted disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Start collecting data
+              {savingSite ? "Saving…" : "Start collecting data"}
             </button>
           </div>
         ) : null}
@@ -225,18 +266,20 @@ export function AddSiteWizard() {
               Awaiting your first signal
             </h2>
             <p className="w-full text-base leading-relaxed text-slate-600 sm:text-lg">
-              When traffic hits <span className="font-semibold text-slate-900">{safeDomain}</span>,{" "}
+              When traffic hits <span className="font-semibold text-slate-900">{confirmedHost}</span>,{" "}
               ingestion will show up in Nexa People within a few minutes.
             </p>
             <Link
-              href="/dashboard"
+              href="/dashboard/sites"
+              prefetch
               className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-800 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:py-4"
             >
-              Return to analytics
+              Return to My Personal Sites
             </Link>
           </div>
         ) : null}
       </div>
     </main>
+    </>
   );
 }

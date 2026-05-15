@@ -1,37 +1,10 @@
-import type { MapPoint, PersonalSite, Product } from "./types";
+import type { MapPoint, Product } from "./types";
 
 export const PRODUCTS: Product[] = [
   { id: "p-delta", name: "Delta Cloud", slug: "delta-cloud" },
   { id: "p-nexus", name: "Nexus Workspaces", slug: "nexus-workspaces" },
   { id: "p-orbit", name: "Orbit Mobile", slug: "orbit-mobile" },
   { id: "p-stream", name: "Stream Analytics", slug: "stream-analytics" },
-];
-
-export const MOCK_PERSONAL_SITES: PersonalSite[] = [
-  {
-    id: "s1",
-    host: "admin.reservation.worldstage.live",
-    visitors24h: 0,
-    deltaPct: 0,
-  },
-  {
-    id: "s2",
-    host: "admin.phlgiant.org",
-    visitors24h: 12,
-    deltaPct: 8,
-  },
-  {
-    id: "s3",
-    host: "app.food-well.org",
-    visitors24h: 48,
-    deltaPct: 100,
-  },
-  {
-    id: "s4",
-    host: "portal.delta-cloud.example",
-    visitors24h: 3,
-    deltaPct: -12,
-  },
 ];
 
 /** Synthetic scatter points — aggregated buckets (privacy-safe). Includes at least one of each map legend type for client demos. */

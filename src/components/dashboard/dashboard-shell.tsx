@@ -8,7 +8,11 @@ import { KpiGrid } from "./kpi-grid";
 import { ChartsSection } from "./charts-section";
 import { PerformanceAnalyticsHeading } from "./performance-analytics-heading";
 
-export function DashboardShell() {
+type DashboardShellProps = {
+  mapScopeKey?: string;
+};
+
+export function DashboardShell({ mapScopeKey = "default" }: DashboardShellProps) {
   return (
     <div className="flex min-h-dvh flex-col">
       <div className="sticky top-0 z-[1000] bg-[var(--canvas-0)]">
@@ -16,7 +20,7 @@ export function DashboardShell() {
         <DashboardActiveFiltersBar />
       </div>
       <main className="mx-auto w-full max-w-[1400px] flex-1 space-y-8 px-4 py-6 sm:px-5 lg:space-y-10 lg:px-8 lg:py-8">
-        <WorldMapScatter />
+        <WorldMapScatter key={mapScopeKey} />
 
         <section className="space-y-6">
           <PerformanceAnalyticsHeading />

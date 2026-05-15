@@ -8,37 +8,16 @@ import { faCopy, faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { faThumbtack } from "@fortawesome/free-solid-svg-icons";
 
 import { DashboardHeader } from "@/components/dashboard/header";
-import { MOCK_PERSONAL_SITES } from "@/lib/mock-data";
 import type { PersonalSite } from "@/lib/types";
 import { buildSparkFromDelta } from "@/lib/personal-site-spark";
 import { buildPersonalSiteInstallSnippet } from "@/lib/site-snippet";
 import { persistSelectedSiteForDashboard } from "@/lib/selected-site";
+import { getCachedPersonalSites } from "@/lib/personal-sites-cache";
 import {
-  DELETED_STORAGE_KEY,
-  PINNED_STORAGE_KEY,
-  loadDeletedIds,
-  loadPinnedIds,
-  notifyPersonalSitesListChanged,
-} from "@/lib/personal-sites-storage";
-
-function saveDeleted(ids: string[]) {
-  try {
-    localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(ids));
-    notifyPersonalSitesListChanged();
-  } catch {
-    /* ignore */
-  }
-}
-
-function savePinned(ids: string[]) {
-  try {
-    localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(ids));
-    notifyPersonalSitesListChanged();
-  } catch {
-    /* ignore */
-  }
-}
-
+  deletePersonalSiteApi,
+  fetchPersonalSites,
+  setPinnedSitesApi,
+} from "@/lib/personal-sites-fetch";
 function MiniSpark({ values, flat }: { values: number[]; flat?: boolean }) {
   const gid = useId().replace(/:/g, "");
   const w = 220;
@@ -294,24 +273,51 @@ function SiteCard({
 export function PersonalSitesClient() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [pinned, setPinned] = useState<string[]>([]);
-  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const initialCache = getCachedPersonalSites();
+  const [activeSites, setActiveSites] = useState<PersonalSite[]>(() => initialCache?.sites ?? []);
+  const [pinned, setPinned] = useState<string[]>(() => initialCache?.pinnedIds ?? []);
+  const [listLoading, setListLoading] = useState(() => !initialCache);
+  const [listError, setListError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [copyFlashId, setCopyFlashId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PersonalSite | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+
+  const refreshList = useCallback(async () => {
+    try {
+      const data = await fetchPersonalSites();
+      setActiveSites(data.sites);
+      setPinned(data.pinnedIds);
+      setListError(null);
+    } catch (e) {
+      setListError(e instanceof Error ? e.message : "Failed to load sites");
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    setPinned(loadPinnedIds());
-    setDeletedIds(loadDeletedIds());
-  }, []);
+    void refreshList();
+  }, [refreshList]);
 
-  const togglePinned = useCallback((id: string) => {
-    setPinned((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      savePinned(next);
-      return next;
-    });
-  }, []);
+  const togglePinned = useCallback(
+    async (id: string) => {
+      if (actionBusy) return;
+      const next = pinned.includes(id) ? pinned.filter((x) => x !== id) : [...pinned, id];
+      setActionBusy(true);
+      try {
+        const data = await setPinnedSitesApi(next);
+        setActiveSites(data.sites);
+        setPinned(data.pinnedIds);
+        setListError(null);
+      } catch (e) {
+        setListError(e instanceof Error ? e.message : "Could not update pin");
+      } finally {
+        setActionBusy(false);
+      }
+    },
+    [pinned, actionBusy]
+  );
 
   const copyScript = useCallback(async (site: PersonalSite) => {
     const text = buildPersonalSiteInstallSnippet(site.host);
@@ -324,43 +330,30 @@ export function PersonalSitesClient() {
     }
   }, []);
 
-  const activeSites = useMemo(
-    () => MOCK_PERSONAL_SITES.filter((s) => !deletedIds.includes(s.id)),
-    [deletedIds]
-  );
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = q
-      ? activeSites.filter((s) => s.host.toLowerCase().includes(q))
-      : [...activeSites];
-    list.sort((a, b) => {
-      const ap = pinned.includes(a.id) ? 1 : 0;
-      const bp = pinned.includes(b.id) ? 1 : 0;
-      if (ap !== bp) return bp - ap;
-      return a.host.localeCompare(b.host);
-    });
+    const list = q ? activeSites.filter((s) => s.host.toLowerCase().includes(q)) : [...activeSites];
     return list;
-  }, [query, pinned, activeSites]);
+  }, [query, activeSites]);
 
-  const handleConfirmDelete = useCallback(() => {
-    if (!deleteTarget) return;
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTarget || actionBusy) return;
     const id = deleteTarget.id;
-    setDeletedIds((prev) => {
-      if (prev.includes(id)) return prev;
-      const next = [...prev, id];
-      saveDeleted(next);
-      return next;
-    });
-    setPinned((prev) => {
-      const next = prev.filter((x) => x !== id);
-      savePinned(next);
-      return next;
-    });
-    setCopyFlashId((cur) => (cur === id ? null : cur));
-    setOpenMenuId(null);
-    setDeleteTarget(null);
-  }, [deleteTarget]);
+    setActionBusy(true);
+    try {
+      const data = await deletePersonalSiteApi(id);
+      setActiveSites(data.sites);
+      setPinned(data.pinnedIds);
+      setListError(null);
+      setCopyFlashId((cur) => (cur === id ? null : cur));
+      setOpenMenuId(null);
+      setDeleteTarget(null);
+    } catch (e) {
+      setListError(e instanceof Error ? e.message : "Could not delete site");
+    } finally {
+      setActionBusy(false);
+    }
+  }, [deleteTarget, actionBusy]);
 
   const openAnalyticsForSite = useCallback(
     (site: PersonalSite) => {
@@ -381,6 +374,7 @@ export function PersonalSitesClient() {
         <div>
           <Link
             href="/dashboard"
+            prefetch
             className="text-sm font-medium text-primary underline-offset-2 transition hover:underline"
           >
             ← Back to analytics dashboard
@@ -400,6 +394,7 @@ export function PersonalSitesClient() {
               </div>
               <Link
                 href="/dashboard/sites/add"
+                prefetch
                 className="inline-flex w-full shrink-0 items-center justify-center rounded-md bg-primary p-2 text-sm font-semibold text-white shadow-sm transition-all duration-nexa ease-nexa-out hover:bg-primary-muted active:scale-[0.98] sm:w-auto sm:self-start"
               >
                 + Add website
@@ -408,6 +403,25 @@ export function PersonalSitesClient() {
           </div>
         </div>
 
+        {listError ? (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+            {listError}
+            <button
+              type="button"
+              onClick={() => {
+                setListLoading(true);
+                void refreshList();
+              }}
+              className="ml-3 font-semibold underline underline-offset-2"
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
+
+        {listLoading ? (
+          <p className="py-6 text-center text-sm text-slate-500">Loading sites…</p>
+        ) : null}
         <div className="relative max-w-xl">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -420,32 +434,35 @@ export function PersonalSitesClient() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search sites…"
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 shadow-sm outline-none ring-primary/20 transition placeholder:text-slate-400 focus:border-primary/35 focus:ring-2"
+            disabled={listLoading}
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 shadow-sm outline-none ring-primary/20 transition placeholder:text-slate-400 focus:border-primary/35 focus:ring-2 disabled:opacity-60"
             aria-label="Search sites"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 lg:gap-4">
-          {filtered.map((site) => (
-            <SiteCard
-              key={site.id}
-              site={site}
-              pinned={pinned.includes(site.id)}
-              menuOpen={openMenuId === site.id}
-              onToggleMenu={() =>
-                setOpenMenuId((id) => (id === site.id ? null : site.id))
-              }
-              onCloseMenu={() => setOpenMenuId(null)}
-              onPinToggle={() => togglePinned(site.id)}
-              onCopyScript={() => void copyScript(site)}
-              copyFlash={copyFlashId === site.id}
-              onRequestDelete={() => setDeleteTarget(site)}
-              onOpenDashboard={openAnalyticsForSite}
-            />
-          ))}
+          {!listLoading
+            ? filtered.map((site) => (
+                <SiteCard
+                  key={site.id}
+                  site={site}
+                  pinned={pinned.includes(site.id)}
+                  menuOpen={openMenuId === site.id}
+                  onToggleMenu={() =>
+                    setOpenMenuId((id) => (id === site.id ? null : site.id))
+                  }
+                  onCloseMenu={() => setOpenMenuId(null)}
+                  onPinToggle={() => void togglePinned(site.id)}
+                  onCopyScript={() => void copyScript(site)}
+                  copyFlash={copyFlashId === site.id}
+                  onRequestDelete={() => setDeleteTarget(site)}
+                  onOpenDashboard={openAnalyticsForSite}
+                />
+              ))
+            : null}
         </div>
 
-        {filtered.length === 0 ? (
+        {!listLoading && filtered.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
             {activeSites.length === 0 && !query.trim()
               ? "No sites in your list. Use + Add website above to track a domain."
@@ -488,8 +505,9 @@ export function PersonalSitesClient() {
                 </button>
                 <button
                   type="button"
+                  disabled={actionBusy}
                   onClick={handleConfirmDelete}
-                  className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700"
+                  className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Delete site
                 </button>

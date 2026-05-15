@@ -21,6 +21,7 @@
 # misc
 .DS_Store
 *.pem
+/FREE_SERVICES_ARCHITECTURE.txt
 
 # debug
 npm-debug.log*
@@ -45,3 +46,7 @@ build-log.txt
 
 # typescript
 *.tsbuildinfo
+
+# server-persisted site registry (set PERSONAL_SITES_DATA_PATH to override location)
+/data/personal-sites.json
+/data/personal-sites.sqlite

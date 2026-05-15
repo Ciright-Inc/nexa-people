@@ -27,8 +27,7 @@ export function UserMenu({ variant = "light" }: UserMenuProps) {
 
   async function signOut() {
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
-    router.push("/login");
-    router.refresh();
+    router.replace("/login");
   }
 
   return (
@@ -87,6 +86,7 @@ export function UserMenu({ variant = "light" }: UserMenuProps) {
             <div className="w-full min-w-0 p-2">
               <Link
                 href="/dashboard/sites"
+                prefetch
                 onClick={() => setOpen(false)}
                 className={clsx(
                   "flex w-full min-w-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold transition",

@@ -15,6 +15,7 @@ export function DashboardHeader() {
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <Link
               href="/dashboard"
+              prefetch
               aria-label="Go to dashboard"
               className="flex h-10 shrink-0 items-center rounded-md outline-none ring-offset-2 transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/30"
             >

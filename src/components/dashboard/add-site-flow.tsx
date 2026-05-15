@@ -1,12 +1,10 @@
 "use client";
 
-import { DashboardFiltersProvider } from "@/context/dashboard-filters";
 import { AddSiteWizard } from "./add-site-wizard";
 import { DashboardHeader } from "./header";
 
 export function AddSiteFlow() {
   return (
-    <DashboardFiltersProvider>
       <div className="flex min-h-dvh flex-col">
         <div className="sticky top-0 z-[1000] bg-[var(--canvas-0)]">
           <DashboardHeader />
@@ -18,6 +16,5 @@ export function AddSiteFlow() {
           </p>
         </footer>
       </div>
-    </DashboardFiltersProvider>
   );
 }

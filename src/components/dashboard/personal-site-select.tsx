@@ -4,7 +4,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { clsx } from "clsx";
 
-import { getActivePersonalSitesSorted, PERSONAL_SITES_LIST_CHANGED_EVENT } from "@/lib/personal-sites-storage";
+import type { PersonalSite } from "@/lib/types";
+import { getCachedPersonalSites } from "@/lib/personal-sites-cache";
+import { fetchPersonalSites } from "@/lib/personal-sites-fetch";
+import { PERSONAL_SITES_LIST_CHANGED_EVENT } from "@/lib/personal-sites-storage";
 import type { SelectedSitePayload } from "@/lib/selected-site";
 import { persistSelectedSiteForDashboard, readSelectedSiteFromSession, SELECTED_SITE_CHANGED_EVENT } from "@/lib/selected-site";
 
@@ -28,18 +31,27 @@ export function PersonalSiteSelect() {
     window.addEventListener("storage", bumpTick);
     window.addEventListener(SELECTED_SITE_CHANGED_EVENT, bumpTick);
     window.addEventListener(PERSONAL_SITES_LIST_CHANGED_EVENT, bumpTick);
-    window.addEventListener("focus", bumpTick);
     return () => {
       window.removeEventListener("storage", bumpTick);
       window.removeEventListener(SELECTED_SITE_CHANGED_EVENT, bumpTick);
       window.removeEventListener(PERSONAL_SITES_LIST_CHANGED_EVENT, bumpTick);
-      window.removeEventListener("focus", bumpTick);
     };
   }, [bump]);
 
-  const sortedSites = useMemo(() => {
-    void tick;
-    return getActivePersonalSitesSorted();
+  const [sortedSites, setSortedSites] = useState<PersonalSite[]>(() => getCachedPersonalSites()?.sites ?? []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchPersonalSites()
+      .then((d) => {
+        if (!cancelled) setSortedSites(d.sites);
+      })
+      .catch(() => {
+        if (!cancelled) setSortedSites((prev) => (prev.length > 0 ? prev : []));
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [tick]);
 
   const current = useMemo(() => {
@@ -139,19 +151,12 @@ export function PersonalSiteSelect() {
                         selected && "bg-primary text-white hover:bg-primary-muted"
                       )}
                       onClick={() => {
-                        const selectionChanged = sessionSite?.id !== s.id;
                         persistSelectedSiteForDashboard({ id: s.id, host: s.host });
                         setOpen(false);
                         setQuery("");
                         bump();
 
-                        const onMainDashboard = pathname === "/dashboard";
-                        if (onMainDashboard && selectionChanged) {
-                          // Same-route client navigation is a no-op; reload so analytics clearly re-mount.
-                          window.location.assign("/dashboard");
-                          return;
-                        }
-                        if (!onMainDashboard) {
+                        if (pathname !== "/dashboard") {
                           router.push("/dashboard");
                         }
                       }}

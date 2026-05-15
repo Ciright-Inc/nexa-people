@@ -41,13 +41,13 @@ export type Product = {
   slug: string;
 };
 
-/** Tracked site for “My Personal Sites” (mock list). */
+/** Tracked site for “My Personal Sites”. */
 export type PersonalSite = {
   id: string;
   host: string;
-  /** Synthetic visitors in last 24h for display. */
+  /** Visitors in last 24h (0 until real analytics are wired). */
   visitors24h: number;
-  /** Percent change vs prior window (display only; mini chart is derived from this). */
+  /** Percent change vs prior window (0 until real analytics are wired). */
   deltaPct: number;
 };
 
