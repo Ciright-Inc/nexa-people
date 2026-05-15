@@ -1,23 +1,27 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { clsx } from "clsx";
 
 import { getActivePersonalSitesSorted, PERSONAL_SITES_LIST_CHANGED_EVENT } from "@/lib/personal-sites-storage";
+import type { SelectedSitePayload } from "@/lib/selected-site";
 import { persistSelectedSiteForDashboard, readSelectedSiteFromSession, SELECTED_SITE_CHANGED_EVENT } from "@/lib/selected-site";
 
 export function PersonalSiteSelect() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [tick, setTick] = useState(0);
-
-  const [listReady, setListReady] = useState(false);
+  /** null until after mount — avoids hydration mismatch (sessionStorage missing on server). */
+  const [sessionSite, setSessionSite] = useState<SelectedSitePayload | null>(null);
 
   const bump = useCallback(() => setTick((t) => t + 1), []);
 
   useEffect(() => {
-    setListReady(true);
-  }, []);
+    setSessionSite(readSelectedSiteFromSession());
+  }, [tick]);
 
   useEffect(() => {
     const bumpTick = () => bump();
@@ -38,11 +42,6 @@ export function PersonalSiteSelect() {
     return getActivePersonalSitesSorted();
   }, [tick]);
 
-  const sessionSite = useMemo(() => {
-    void tick;
-    return readSelectedSiteFromSession();
-  }, [tick]);
-
   const current = useMemo(() => {
     if (!sessionSite) return null;
     return sortedSites.find((s) => s.id === sessionSite.id) ?? null;
@@ -55,10 +54,11 @@ export function PersonalSiteSelect() {
   }, [query, sortedSites]);
 
   const label = useMemo(() => {
+    if (current) return current.host;
+    if (sessionSite) return sessionSite.host;
     if (sortedSites.length === 0) return "No sites";
-    if (!listReady) return "Select site";
-    return current?.host ?? "Select site";
-  }, [sortedSites.length, listReady, current]);
+    return "Select site";
+  }, [current, sessionSite, sortedSites.length]);
 
   const ariaLabel = useMemo(() => `Site: ${label}`, [label]);
 
@@ -127,7 +127,7 @@ export function PersonalSiteSelect() {
             </div>
             <ul role="listbox" className="max-h-72 w-full min-w-0 overflow-auto p-2" tabIndex={-1}>
               {filtered.map((s) => {
-                const selected = current?.id === s.id;
+                const selected = sessionSite?.id === s.id;
                 return (
                   <li key={s.id} className="w-full">
                     <button
@@ -139,10 +139,21 @@ export function PersonalSiteSelect() {
                         selected && "bg-primary text-white hover:bg-primary-muted"
                       )}
                       onClick={() => {
+                        const selectionChanged = sessionSite?.id !== s.id;
                         persistSelectedSiteForDashboard({ id: s.id, host: s.host });
                         setOpen(false);
                         setQuery("");
                         bump();
+
+                        const onMainDashboard = pathname === "/dashboard";
+                        if (onMainDashboard && selectionChanged) {
+                          // Same-route client navigation is a no-op; reload so analytics clearly re-mount.
+                          window.location.assign("/dashboard");
+                          return;
+                        }
+                        if (!onMainDashboard) {
+                          router.push("/dashboard");
+                        }
                       }}
                     >
                       <span className="min-w-0 flex-1 truncate font-mono text-[13px] font-semibold">{s.host}</span>
